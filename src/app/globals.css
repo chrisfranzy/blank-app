@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #09090b;
+  --foreground: #fafafa;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Safe area for mobile nav */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Prose styles for lesson content */
+.prose-lesson {
+  @apply text-zinc-300 leading-relaxed;
+}
+
+.prose-lesson h2 {
+  @apply text-xl font-semibold text-white mt-8 mb-4;
+}
+
+.prose-lesson h3 {
+  @apply text-lg font-medium text-zinc-100 mt-6 mb-3;
+}
+
+.prose-lesson p {
+  @apply mb-4;
+}
+
+.prose-lesson ul {
+  @apply mb-4 ml-4 space-y-1;
+}
+
+.prose-lesson li {
+  @apply list-disc text-zinc-300;
+}
+
+.prose-lesson strong {
+  @apply text-white font-medium;
+}
+
+.prose-lesson code {
+  @apply bg-zinc-800 text-brand-300 px-1.5 py-0.5 rounded text-sm;
+}
+
+.prose-lesson pre {
+  @apply bg-zinc-800/80 border border-zinc-700/50 rounded-lg p-4 mb-4 overflow-x-auto;
+}
+
+.prose-lesson pre code {
+  @apply bg-transparent text-zinc-300 p-0 text-sm;
+}
+
+.prose-lesson blockquote {
+  @apply border-l-2 border-brand-400 pl-4 italic text-zinc-400 my-4;
+}
