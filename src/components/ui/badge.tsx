@@ -10,10 +10,10 @@ export function Badge({ children, className, variant = "default" }: BadgeProps) 
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium font-body",
         variant === "outline"
-          ? "border border-zinc-700 text-zinc-400"
-          : "bg-zinc-800 text-zinc-300",
+          ? "border border-surface-4 text-ink-muted"
+          : "bg-surface-3 text-ink-muted",
         className
       )}
     >

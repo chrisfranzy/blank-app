@@ -2,13 +2,15 @@ import { cn } from "@/lib/utils";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  hover?: boolean;
 }
 
-export function Card({ children, className, ...props }: CardProps) {
+export function Card({ children, className, hover, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-zinc-900 border border-zinc-800 rounded-xl p-5",
+        hover ? "card-surface-hover" : "card-surface",
+        "p-5",
         className
       )}
       {...props}
@@ -36,7 +38,7 @@ export function CardTitle({
   className?: string;
 }) {
   return (
-    <h3 className={cn("text-lg font-semibold text-white", className)}>
+    <h3 className={cn("text-lg font-display font-semibold text-ink", className)}>
       {children}
     </h3>
   );

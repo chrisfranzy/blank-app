@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Route, CheckCircle2, Circle, PlayCircle, Trophy } from "lucide-react";
+import { CheckCircle2, Circle, PlayCircle, Trophy } from "lucide-react";
 import { LessonCard } from "@/components/lessons/lesson-card";
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { lessons } from "@/data/lessons";
 import { ProgressStatus } from "@/types";
@@ -32,45 +32,48 @@ export default function PathPage() {
     {
       title: "Completed",
       icon: CheckCircle2,
-      iconColor: "text-emerald-400",
+      iconColor: "text-accent-sage",
       lessons: pathLessons.filter((p) => p.status === "completed"),
     },
     {
       title: "In Progress",
       icon: PlayCircle,
-      iconColor: "text-amber-400",
+      iconColor: "text-accent-sand",
       lessons: pathLessons.filter((p) => p.status === "in_progress"),
     },
     {
       title: "Up Next",
       icon: Circle,
-      iconColor: "text-zinc-500",
+      iconColor: "text-ink-faint",
       lessons: pathLessons.filter((p) => p.status === "not_started"),
     },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-white">
-          My Learning Path
+        <p className="text-xs font-mono text-ink-faint uppercase tracking-[0.2em] mb-2">
+          My Path
+        </p>
+        <h1 className="text-3xl md:text-4xl font-display font-bold text-ink tracking-tight">
+          Learning journey
         </h1>
-        <p className="text-zinc-400 mt-1">
-          Your personalized journey through Claude tools
+        <p className="text-ink-muted mt-2">
+          Your personalized path through Claude tools
         </p>
       </div>
 
       {/* Progress overview */}
       <Card>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-brand-400/10 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-brand-400" />
+        <div className="flex items-center gap-4 mb-5">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-coral/20 to-accent-sand/10 flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-accent-coral" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="font-medium text-white">
+            <p className="font-display font-semibold text-ink text-lg">
               {completedCount} of {totalCount} completed
             </p>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-ink-muted">
               {Math.round((completedCount / totalCount) * 100)}% of your path
             </p>
           </div>
@@ -78,21 +81,24 @@ export default function PathPage() {
         <ProgressBar value={completedCount} max={totalCount} />
       </Card>
 
-      {/* Path sections */}
+      {/* Sections */}
       {sections.map((section) => {
         if (section.lessons.length === 0) return null;
         return (
-          <div key={section.title} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <section.icon className={`w-5 h-5 ${section.iconColor}`} />
-              <h2 className="text-lg font-semibold text-white">
+          <div key={section.title} className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <section.icon
+                className={`w-5 h-5 ${section.iconColor}`}
+                strokeWidth={1.5}
+              />
+              <h2 className="text-lg font-display font-semibold text-ink">
                 {section.title}
               </h2>
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-ink-faint font-mono">
                 ({section.lessons.length})
               </span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 stagger">
               {section.lessons.map((pathLesson) => {
                 const lesson = lessons.find((l) => l.id === pathLesson.id);
                 if (!lesson) return null;

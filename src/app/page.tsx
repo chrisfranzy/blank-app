@@ -1,26 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { Zap, BookOpen, Trophy, Target, ArrowRight, Activity } from "lucide-react";
+import { Target, ArrowRight, Activity } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { LessonCard } from "@/components/lessons/lesson-card";
 import { lessons } from "@/data/lessons";
 import { demoSignals } from "@/data/demo-signals";
 import Link from "next/link";
 
+const platformColors: Record<string, string> = {
+  slack: "bg-accent-lavender",
+  email: "bg-accent-sage",
+  linear: "bg-accent-coral",
+  hubspot: "bg-accent-sand",
+  github: "bg-ink-faint",
+};
+
 export default function DashboardPage() {
-  // Demo state - in production this would come from a database
-  const [completedLessons] = useState<string[]>(["claude-code-intro", "prompt-engineering"]);
-  const [inProgressLessons] = useState<string[]>(["mcp-intro", "claude-api-tool-use"]);
+  const [completedLessons] = useState(["claude-code-intro", "prompt-engineering"]);
+  const [inProgressLessons] = useState(["mcp-intro", "claude-api-tool-use"]);
 
   const totalLessons = lessons.length;
   const completedCount = completedLessons.length;
   const inProgressCount = inProgressLessons.length;
   const completionPercent = Math.round((completedCount / totalLessons) * 100);
 
-  // Get recommended lessons (ones not started yet)
   const recommended = lessons
     .filter(
       (l) =>
@@ -28,21 +34,30 @@ export default function DashboardPage() {
     )
     .slice(0, 3);
 
-  // Recent activity signals
   const recentSignals = demoSignals.slice(0, 4);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-zinc-400 mt-1">
-          Your personalized Claude tools learning overview
-        </p>
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Hero header */}
+      <div className="relative">
+        <div className="absolute -top-10 -left-10 w-64 h-64 bg-accent-coral/[0.04] rounded-full blur-3xl" />
+        <div className="absolute -top-5 right-20 w-40 h-40 bg-accent-sage/[0.03] rounded-full blur-3xl" />
+        <div className="relative">
+          <p className="text-xs font-mono text-ink-faint uppercase tracking-[0.2em] mb-2">
+            Dashboard
+          </p>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-ink tracking-tight">
+            Welcome back,{" "}
+            <span className="text-gradient-coral">Chris</span>
+          </h1>
+          <p className="text-ink-muted mt-2 text-[15px] max-w-lg">
+            You&apos;re making great progress. Here&apos;s where you left off.
+          </p>
+        </div>
       </div>
 
-      {/* Metrics grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      {/* Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger">
         <MetricCard
           label="Completed"
           value={completedCount}
@@ -69,30 +84,27 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Overall progress */}
+      {/* Progress section */}
       <Card>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-brand-400" />
-            <span className="font-medium text-white">Overall Progress</span>
-          </div>
-          <span className="text-sm text-zinc-400">
-            {completedCount}/{totalLessons} lessons
+        <div className="flex items-center justify-between mb-4">
+          <CardTitle>Overall Progress</CardTitle>
+          <span className="text-sm text-ink-muted font-mono">
+            {completedCount}/{totalLessons}
           </span>
         </div>
         <ProgressBar value={completedCount} max={totalLessons} />
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-3 gap-5 mt-5">
           {[
-            { label: "Coding", count: 2, total: 5, color: "bg-sky-400" },
-            { label: "Automation", count: 1, total: 6, color: "bg-violet-400" },
-            { label: "Best Practices", count: 1, total: 3, color: "bg-amber-400" },
+            { label: "Coding", count: 2, total: 5, color: "bg-accent-sage" },
+            { label: "Automation", count: 1, total: 6, color: "bg-accent-lavender" },
+            { label: "Practices", count: 1, total: 3, color: "bg-accent-sand" },
           ].map((cat) => (
             <div key={cat.label}>
-              <div className="flex justify-between text-xs text-zinc-400 mb-1.5">
-                <span>{cat.label}</span>
-                <span>
-                  {cat.count}/{cat.total}
+              <div className="flex justify-between text-xs text-ink-muted mb-2">
+                <span className="font-mono uppercase tracking-wider text-[10px]">
+                  {cat.label}
                 </span>
+                <span>{cat.count}/{cat.total}</span>
               </div>
               <ProgressBar value={cat.count} max={cat.total} color={cat.color} />
             </div>
@@ -100,25 +112,25 @@ export default function DashboardPage() {
         </div>
       </Card>
 
-      {/* Two-column layout */}
-      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Recommended lessons */}
-        <div className="lg:col-span-2 space-y-3">
+      {/* Two-column: recommendations + activity */}
+      <div className="grid lg:grid-cols-5 gap-5 md:gap-8">
+        {/* Recommended */}
+        <div className="lg:col-span-3 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-brand-400" />
-              <h2 className="text-lg font-semibold text-white">
-                Recommended for You
+            <div className="flex items-center gap-2.5">
+              <Target className="w-5 h-5 text-accent-coral" strokeWidth={1.5} />
+              <h2 className="text-lg font-display font-semibold text-ink">
+                Recommended
               </h2>
             </div>
             <Link
               href="/discover"
-              className="text-sm text-brand-400 hover:text-brand-300 flex items-center gap-1"
+              className="text-sm text-accent-coral hover:text-accent-coral-light flex items-center gap-1 transition-colors"
             >
               See all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 stagger">
             {recommended.map((lesson) => (
               <LessonCard key={lesson.id} lesson={lesson} />
             ))}
@@ -126,38 +138,32 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity feed */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-brand-400" />
-            <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center gap-2.5">
+            <Activity className="w-5 h-5 text-accent-sage" strokeWidth={1.5} />
+            <h2 className="text-lg font-display font-semibold text-ink">
+              Activity
+            </h2>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5 stagger">
             {recentSignals.map((signal) => (
-              <Card key={signal.id} className="p-3">
-                <div className="flex items-start gap-2.5">
+              <Card key={signal.id} className="p-3.5">
+                <div className="flex items-start gap-3">
                   <span
-                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                      signal.platform === "slack"
-                        ? "bg-purple-400"
-                        : signal.platform === "email"
-                        ? "bg-sky-400"
-                        : signal.platform === "linear"
-                        ? "bg-violet-400"
-                        : signal.platform === "hubspot"
-                        ? "bg-orange-400"
-                        : "bg-zinc-400"
+                    className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${
+                      platformColors[signal.platform] || "bg-ink-faint"
                     }`}
                   />
                   <div className="min-w-0">
-                    <p className="text-sm text-zinc-300 line-clamp-2">
+                    <p className="text-sm text-ink/80 line-clamp-2 leading-relaxed">
                       {signal.content}
                     </p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-xs text-zinc-500 capitalize">
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-[10px] text-ink-faint font-mono uppercase tracking-wider">
                         {signal.platform}
                       </span>
-                      <span className="text-xs text-zinc-600">&middot;</span>
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-ink-faint">&middot;</span>
+                      <span className="text-[10px] text-ink-faint">
                         {signal.detectedTools[0]}
                       </span>
                     </div>

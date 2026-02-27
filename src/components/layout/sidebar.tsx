@@ -12,7 +12,6 @@ import {
   Link as LinkIcon,
   Bell,
   Settings,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,17 +31,26 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-zinc-900 border-r border-zinc-800 h-screen sticky top-0">
-      <div className="p-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-brand-400 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-zinc-900" />
+    <aside className="hidden lg:flex flex-col w-[260px] bg-surface-1/50 border-r border-surface-3/50 h-screen sticky top-0">
+      {/* Logo */}
+      <div className="p-7">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-coral to-accent-sand flex items-center justify-center shadow-lg shadow-accent-coral/10 group-hover:shadow-accent-coral/20 transition-shadow">
+            <span className="font-display font-bold text-surface-0 text-sm">C</span>
           </div>
-          <span className="text-lg font-semibold text-white">Learning Hub</span>
+          <div>
+            <span className="text-[15px] font-display font-semibold text-ink tracking-tight">
+              Learning Hub
+            </span>
+            <span className="block text-[10px] text-ink-faint uppercase tracking-[0.15em] mt-0.5">
+              by Anthropic
+            </span>
+          </div>
         </Link>
       </div>
 
-      <nav className="flex-1 px-3 space-y-1">
+      {/* Nav */}
+      <nav className="flex-1 px-3 space-y-0.5">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -52,22 +60,32 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200",
                 isActive
-                  ? "bg-brand-400/15 text-brand-300"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                  ? "bg-accent-coral/10 text-accent-coral font-medium"
+                  : "text-ink-muted hover:text-ink hover:bg-surface-2/50"
               )}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <item.icon
+                className={cn(
+                  "w-[18px] h-[18px] flex-shrink-0 transition-colors",
+                  isActive ? "text-accent-coral" : "text-ink-faint"
+                )}
+                strokeWidth={isActive ? 2 : 1.5}
+              />
               {item.label}
+              {isActive && (
+                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-coral" />
+              )}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 mx-3 mb-4 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-        <p className="text-xs text-zinc-400">
-          Powered by Claude &middot; Anthropic
+      {/* Footer */}
+      <div className="mx-4 mb-5 p-4 rounded-xl bg-surface-2/40 border border-surface-3/30">
+        <p className="text-[11px] text-ink-faint font-mono tracking-wide">
+          POWERED BY CLAUDE
         </p>
       </div>
     </aside>

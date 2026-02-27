@@ -3,9 +3,8 @@
 import { useState, useMemo } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { LessonCard } from "@/components/lessons/lesson-card";
-import { Badge } from "@/components/ui/badge";
 import { lessons, getAllTools, getAllCategories } from "@/data/lessons";
-import { cn, getDifficultyColor, getCategoryColor } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Difficulty } from "@/types";
 
 export default function DiscoverPage() {
@@ -45,33 +44,39 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-white">Discover</h1>
-        <p className="text-zinc-400 mt-1">
-          Explore lessons across all Claude tools
+        <p className="text-xs font-mono text-ink-faint uppercase tracking-[0.2em] mb-2">
+          Discover
+        </p>
+        <h1 className="text-3xl md:text-4xl font-display font-bold text-ink tracking-tight">
+          Explore lessons
+        </h1>
+        <p className="text-ink-muted mt-2">
+          Browse {lessons.length} lessons across all Claude tools
         </p>
       </div>
 
-      {/* Search */}
+      {/* Search + filter bar */}
       <div className="flex gap-3">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
           <input
             type="text"
             placeholder="Search lessons, tools, topics..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-brand-400/50 focus:ring-1 focus:ring-brand-400/20"
+            className="w-full bg-surface-1 border border-surface-3 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-accent-coral/30 focus:ring-1 focus:ring-accent-coral/10 transition-all font-body"
           />
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={cn(
-            "px-4 py-3 rounded-xl border text-sm font-medium transition-colors flex items-center gap-2",
+            "px-4 py-3 rounded-2xl border text-sm font-medium transition-all flex items-center gap-2",
             showFilters || hasFilters
-              ? "bg-brand-400/10 border-brand-400/30 text-brand-300"
-              : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+              ? "bg-accent-coral/10 border-accent-coral/20 text-accent-coral"
+              : "bg-surface-1 border-surface-3 text-ink-muted hover:text-ink hover:border-surface-4"
           )}
         >
           <Filter className="w-4 h-4" />
@@ -79,126 +84,99 @@ export default function DiscoverPage() {
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Filters panel */}
       {showFilters && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4">
+        <div className="card-surface p-5 space-y-5 animate-scale-in">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-white">Filters</span>
+            <span className="text-sm font-display font-medium text-ink">Filters</span>
             {hasFilters && (
               <button
                 onClick={clearFilters}
-                className="text-xs text-zinc-400 hover:text-white flex items-center gap-1"
+                className="text-xs text-ink-muted hover:text-ink flex items-center gap-1 transition-colors"
               >
                 <X className="w-3 h-3" /> Clear all
               </button>
             )}
           </div>
 
-          {/* Tool filter */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">
-              Tool
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {tools.map((tool) => (
-                <button
-                  key={tool}
-                  onClick={() =>
-                    setSelectedTool(selectedTool === tool ? null : tool)
-                  }
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                    selectedTool === tool
-                      ? "bg-brand-400/20 text-brand-300 border border-brand-400/30"
-                      : "bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"
-                  )}
-                >
-                  {tool}
-                </button>
-              ))}
+          {[
+            { label: "Tool", items: tools, selected: selectedTool, setter: setSelectedTool },
+            { label: "Category", items: categories, selected: selectedCategory, setter: setSelectedCategory },
+          ].map((filter) => (
+            <div key={filter.label}>
+              <p className="text-[10px] text-ink-faint mb-2.5 font-mono uppercase tracking-[0.15em]">
+                {filter.label}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {filter.items.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() =>
+                      filter.setter(filter.selected === item ? null : item)
+                    }
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl text-xs font-medium transition-all capitalize",
+                      filter.selected === item
+                        ? "bg-accent-coral/15 text-accent-coral border border-accent-coral/25"
+                        : "bg-surface-3/50 text-ink-muted hover:text-ink border border-transparent hover:border-surface-4"
+                    )}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ))}
 
-          {/* Category filter */}
           <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">
-              Category
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() =>
-                    setSelectedCategory(selectedCategory === cat ? null : cat)
-                  }
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize",
-                    selectedCategory === cat
-                      ? "bg-brand-400/20 text-brand-300 border border-brand-400/30"
-                      : "bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"
-                  )}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Difficulty filter */}
-          <div>
-            <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">
+            <p className="text-[10px] text-ink-faint mb-2.5 font-mono uppercase tracking-[0.15em]">
               Difficulty
             </p>
             <div className="flex flex-wrap gap-2">
-              {(["beginner", "intermediate", "advanced"] as Difficulty[]).map(
-                (diff) => (
-                  <button
-                    key={diff}
-                    onClick={() =>
-                      setSelectedDifficulty(
-                        selectedDifficulty === diff ? null : diff
-                      )
-                    }
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize",
-                      selectedDifficulty === diff
-                        ? "bg-brand-400/20 text-brand-300 border border-brand-400/30"
-                        : "bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"
-                    )}
-                  >
-                    {diff}
-                  </button>
-                )
-              )}
+              {(["beginner", "intermediate", "advanced"] as Difficulty[]).map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() =>
+                    setSelectedDifficulty(selectedDifficulty === diff ? null : diff)
+                  }
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl text-xs font-medium transition-all capitalize",
+                    selectedDifficulty === diff
+                      ? "bg-accent-coral/15 text-accent-coral border border-accent-coral/25"
+                      : "bg-surface-3/50 text-ink-muted hover:text-ink border border-transparent hover:border-surface-4"
+                  )}
+                >
+                  {diff}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* Results count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-400">
-          {filteredLessons.length} lesson{filteredLessons.length !== 1 ? "s" : ""}
-          {hasFilters && " (filtered)"}
-        </p>
-      </div>
+      {/* Results */}
+      <p className="text-sm text-ink-muted font-mono">
+        {filteredLessons.length} result{filteredLessons.length !== 1 ? "s" : ""}
+        {hasFilters && " (filtered)"}
+      </p>
 
-      {/* Lesson grid */}
-      <div className="grid md:grid-cols-2 gap-3 md:gap-4">
+      <div className="grid md:grid-cols-2 gap-4 stagger">
         {filteredLessons.map((lesson) => (
           <LessonCard key={lesson.id} lesson={lesson} />
         ))}
       </div>
 
       {filteredLessons.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-zinc-500 text-lg">No lessons match your filters</p>
+        <div className="text-center py-20">
+          <p className="text-ink-muted text-lg font-display">
+            No lessons match your filters
+          </p>
           <button
             onClick={() => {
               setSearch("");
               clearFilters();
             }}
-            className="mt-3 text-brand-400 text-sm hover:text-brand-300"
+            className="mt-4 text-accent-coral text-sm hover:text-accent-coral-light transition-colors"
           >
             Clear all filters
           </button>

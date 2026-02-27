@@ -16,41 +16,29 @@ export function formatDate(dateStr: string): string {
 export function getDifficultyColor(difficulty: string): string {
   switch (difficulty) {
     case "beginner":
-      return "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
+      return "text-accent-sage bg-accent-sage/10 border-accent-sage/20";
     case "intermediate":
-      return "text-amber-400 bg-amber-400/10 border-amber-400/20";
+      return "text-accent-sand bg-accent-sand/10 border-accent-sand/20";
     case "advanced":
-      return "text-rose-400 bg-rose-400/10 border-rose-400/20";
+      return "text-accent-coral bg-accent-coral/10 border-accent-coral/20";
     default:
-      return "text-zinc-400 bg-zinc-400/10 border-zinc-400/20";
+      return "text-ink-muted bg-surface-3 border-surface-4";
   }
 }
 
 export function getCategoryColor(category: string): string {
   switch (category) {
     case "automation":
-      return "text-violet-400 bg-violet-400/10";
+      return "text-accent-lavender bg-accent-lavender/10";
     case "coding":
-      return "text-sky-400 bg-sky-400/10";
+      return "text-accent-sage bg-accent-sage/10";
     case "communication":
-      return "text-emerald-400 bg-emerald-400/10";
+      return "text-accent-sand bg-accent-sand/10";
     case "best-practices":
-      return "text-amber-400 bg-amber-400/10";
+      return "text-accent-coral bg-accent-coral/10";
     case "workflow":
-      return "text-rose-400 bg-rose-400/10";
+      return "text-accent-coral-light bg-accent-coral-light/10";
     default:
-      return "text-zinc-400 bg-zinc-400/10";
+      return "text-ink-muted bg-surface-3";
   }
-}
-
-export function getToolIcon(tool: string): string {
-  const icons: Record<string, string> = {
-    "Claude Code": "terminal",
-    "Claude Cowork": "monitor",
-    MCP: "plug",
-    "Claude API": "code",
-    "AI Connectors": "link",
-    "Agent SDK": "bot",
-  };
-  return icons[tool] || "sparkles";
 }

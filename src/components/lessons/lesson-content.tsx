@@ -1,60 +1,169 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { Lesson } from "@/types";
 
 interface LessonContentProps {
   lesson: Lesson;
 }
 
+/**
+ * Renders lesson markdown content using React elements (no innerHTML).
+ * Security: avoids innerHTML/dangerouslySetInnerHTML per security-guidance plugin.
+ */
 export function LessonContent({ lesson }: LessonContentProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
+  const blocks = useMemo(() => parseMarkdown(lesson.content), [lesson.content]);
 
-  useEffect(() => {
-    if (!contentRef.current) return;
-    // Simple markdown-to-HTML conversion for lesson content
-    let html = lesson.content;
+  return (
+    <div className="prose-lesson">
+      {blocks.map((block, i) => (
+        <Block key={i} block={block} />
+      ))}
+    </div>
+  );
+}
+
+type ContentBlock =
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "code"; language: string; code: string }
+  | { type: "list"; items: string[] }
+  | { type: "blockquote"; text: string };
+
+function parseMarkdown(content: string): ContentBlock[] {
+  const blocks: ContentBlock[] = [];
+  const lines = content.split("\n");
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
 
     // Code blocks
-    html = html.replace(
-      /```(\w+)?\n([\s\S]*?)```/g,
-      '<pre><code class="language-$1">$2</code></pre>'
-    );
-
-    // Inline code
-    html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+    if (line.startsWith("```")) {
+      const language = line.slice(3).trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      blocks.push({ type: "code", language, code: codeLines.join("\n") });
+      i++;
+      continue;
+    }
 
     // Headers
-    html = html.replace(/^### (.+)$/gm, "<h3>$1</h3>");
-    html = html.replace(/^## (.+)$/gm, "<h2>$1</h2>");
-
-    // Bold
-    html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    if (line.startsWith("### ")) {
+      blocks.push({ type: "h3", text: line.slice(4) });
+      i++;
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      blocks.push({ type: "h2", text: line.slice(3) });
+      i++;
+      continue;
+    }
 
     // Lists
-    html = html.replace(/^- (.+)$/gm, "<li>$1</li>");
-    html = html.replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>");
-    // Clean up nested ul tags
-    html = html.replace(/<\/ul>\s*<ul>/g, "");
+    if (line.startsWith("- ")) {
+      const items: string[] = [];
+      while (i < lines.length && lines[i].startsWith("- ")) {
+        items.push(lines[i].slice(2));
+        i++;
+      }
+      blocks.push({ type: "list", items });
+      continue;
+    }
 
     // Numbered lists
-    html = html.replace(/^\d+\. (.+)$/gm, "<li>$1</li>");
+    if (/^\d+\. /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\. /, ""));
+        i++;
+      }
+      blocks.push({ type: "list", items });
+      continue;
+    }
 
-    // Paragraphs (lines that aren't already wrapped)
-    html = html
-      .split("\n\n")
-      .map((block) => {
-        if (
-          block.startsWith("<") ||
-          block.trim() === ""
-        )
-          return block;
-        return `<p>${block}</p>`;
-      })
-      .join("\n");
+    // Blockquote
+    if (line.startsWith("> ")) {
+      blocks.push({ type: "blockquote", text: line.slice(2) });
+      i++;
+      continue;
+    }
 
-    contentRef.current.innerHTML = html;
-  }, [lesson.content]);
+    // Paragraph (non-empty lines)
+    if (line.trim()) {
+      const paraLines: string[] = [];
+      while (i < lines.length && lines[i].trim() && !lines[i].startsWith("#") && !lines[i].startsWith("```") && !lines[i].startsWith("- ") && !lines[i].startsWith("> ")) {
+        paraLines.push(lines[i]);
+        i++;
+      }
+      blocks.push({ type: "paragraph", text: paraLines.join(" ") });
+      continue;
+    }
 
-  return <div ref={contentRef} className="prose-lesson" />;
+    i++;
+  }
+
+  return blocks;
+}
+
+function Block({ block }: { block: ContentBlock }) {
+  switch (block.type) {
+    case "h2":
+      return <h2>{renderInline(block.text)}</h2>;
+    case "h3":
+      return <h3>{renderInline(block.text)}</h3>;
+    case "paragraph":
+      return <p>{renderInline(block.text)}</p>;
+    case "code":
+      return (
+        <pre>
+          <code>{block.code}</code>
+        </pre>
+      );
+    case "list":
+      return (
+        <ul>
+          {block.items.map((item, i) => (
+            <li key={i}>{renderInline(item)}</li>
+          ))}
+        </ul>
+      );
+    case "blockquote":
+      return <blockquote>{renderInline(block.text)}</blockquote>;
+  }
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  // Split on bold (**...**) and inline code (`...`)
+  const regex = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Text before match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    const token = match[0];
+    if (token.startsWith("**")) {
+      parts.push(
+        <strong key={match.index}>{token.slice(2, -2)}</strong>
+      );
+    } else if (token.startsWith("`")) {
+      parts.push(<code key={match.index}>{token.slice(1, -1)}</code>);
+    }
+    lastIndex = match.index + token.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
 }

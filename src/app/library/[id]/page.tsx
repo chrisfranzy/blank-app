@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Clock,
-  BookOpen,
   CheckCircle2,
   PlayCircle,
   Terminal,
@@ -37,11 +36,11 @@ export default function LessonDetailPage() {
 
   if (!lesson) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-20">
-        <p className="text-zinc-400 text-lg">Lesson not found</p>
+      <div className="max-w-3xl mx-auto text-center py-24">
+        <p className="text-ink-muted text-lg font-display">Lesson not found</p>
         <button
           onClick={() => router.push("/library")}
-          className="mt-4 text-brand-400 hover:text-brand-300"
+          className="mt-4 text-accent-coral hover:text-accent-coral-light transition-colors"
         >
           Back to Library
         </button>
@@ -52,56 +51,61 @@ export default function LessonDetailPage() {
   const ToolIcon = toolIcons[lesson.toolName] || Code;
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Back button */}
+    <div className="max-w-3xl mx-auto animate-fade-up">
+      {/* Back */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white mb-6 transition-colors"
+        className="flex items-center gap-2 text-sm text-ink-muted hover:text-ink mb-8 transition-colors group"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         Back
       </button>
 
-      {/* Lesson header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center">
-            <ToolIcon className="w-5 h-5 text-zinc-400" />
+      {/* Header */}
+      <div className="mb-10 relative">
+        {/* Decorative blob */}
+        <div className="absolute -top-8 -right-16 w-48 h-48 bg-accent-coral/[0.04] rounded-full blur-3xl" />
+
+        <div className="flex items-center gap-3 mb-5 relative">
+          <div className="w-11 h-11 rounded-xl bg-surface-3/50 flex items-center justify-center">
+            <ToolIcon className="w-5 h-5 text-ink-muted" strokeWidth={1.5} />
           </div>
-          <div>
-            <p className="text-sm text-zinc-500">{lesson.toolName}</p>
-          </div>
+          <span className="text-xs font-mono text-ink-faint uppercase tracking-[0.15em]">
+            {lesson.toolName}
+          </span>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
+        <h1 className="text-2xl md:text-4xl font-display font-bold text-ink tracking-tight mb-4 relative">
           {lesson.title}
         </h1>
-        <p className="text-zinc-400 text-lg">{lesson.summary}</p>
+        <p className="text-ink-muted text-lg leading-relaxed relative">
+          {lesson.summary}
+        </p>
 
-        <div className="flex items-center gap-3 mt-4 flex-wrap">
+        <div className="flex items-center gap-3 mt-5 flex-wrap relative">
           <Badge className={cn(getDifficultyColor(lesson.difficulty))}>
             {lesson.difficulty}
           </Badge>
           <Badge className={cn(getCategoryColor(lesson.category))}>
             {lesson.category}
           </Badge>
-          <span className="flex items-center gap-1 text-sm text-zinc-500">
+          <span className="flex items-center gap-1.5 text-sm text-ink-faint font-mono">
             <Clock className="w-4 h-4" />
             {lesson.estimatedMinutes} min
           </span>
           {lesson.tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
+            <Badge key={tag} variant="outline" className="text-[11px]">
               {tag}
             </Badge>
           ))}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-3 mt-6">
+        {/* Action */}
+        <div className="flex gap-3 mt-8 relative">
           {status === "not_started" && (
             <button
               onClick={() => setStatus("in_progress")}
-              className="flex items-center gap-2 px-5 py-2.5 bg-brand-400 text-zinc-900 rounded-lg font-medium text-sm hover:bg-brand-300 transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent-coral to-accent-sand text-surface-0 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity glow-coral"
             >
               <PlayCircle className="w-4 h-4" />
               Start Lesson
@@ -110,14 +114,14 @@ export default function LessonDetailPage() {
           {status === "in_progress" && (
             <button
               onClick={() => setStatus("completed")}
-              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-400 transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-accent-sage text-surface-0 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
             >
               <CheckCircle2 className="w-4 h-4" />
               Mark Complete
             </button>
           )}
           {status === "completed" && (
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg font-medium text-sm border border-emerald-500/20">
+            <div className="flex items-center gap-2 px-6 py-3 bg-accent-sage/10 text-accent-sage rounded-xl font-medium text-sm border border-accent-sage/20">
               <CheckCircle2 className="w-4 h-4" />
               Completed
             </div>
@@ -125,8 +129,11 @@ export default function LessonDetailPage() {
         </div>
       </div>
 
-      {/* Lesson content */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 md:p-8">
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-surface-3 to-transparent mb-10" />
+
+      {/* Content */}
+      <div className="card-surface p-6 md:p-10">
         <LessonContent lesson={lesson} />
       </div>
     </div>
