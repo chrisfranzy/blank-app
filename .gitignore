@@ -1,5 +1,9 @@
 .streamlit/secrets.toml
 
+# Learning tool database
+data/*.db
+data/*.db-journal
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
