@@ -9,7 +9,7 @@ INTEGRATION_CONFIGS = {
     "slack": {
         "name": "Slack",
         "icon": "💬",
-        "description": "Connect your Slack workspace to detect what your team is asking about, struggling with, and discussing related to Claude tools.",
+        "description": "Connect your Slack workspace to detect what your team is asking about and discussing.",
         "fields": [
             {"key": "bot_token", "label": "Bot Token (xoxb-...)", "type": "password"},
         ],
@@ -22,7 +22,7 @@ INTEGRATION_CONFIGS = {
     "email": {
         "name": "Gmail",
         "icon": "📧",
-        "description": "Connect Gmail to detect repetitive email patterns and identify workflows that could be automated with Claude.",
+        "description": "Connect Gmail to detect repetitive email patterns that could be automated.",
         "fields": [
             {"key": "credentials_json", "label": "OAuth Credentials JSON", "type": "textarea"},
         ],
@@ -30,18 +30,17 @@ INTEGRATION_CONFIGS = {
 1. Go to [console.cloud.google.com](https://console.cloud.google.com)
 2. Enable the Gmail API
 3. Create OAuth 2.0 credentials (Desktop app)
-4. Download the credentials JSON and paste it here
-5. You'll be prompted to authorize on first sync""",
+4. Download the credentials JSON and paste it here""",
     },
     "hubspot": {
         "name": "HubSpot",
         "icon": "📊",
-        "description": "Connect HubSpot to analyze CRM activity and identify sales workflows that Claude can automate.",
+        "description": "Connect HubSpot to analyze CRM activity and find automation opportunities.",
         "fields": [
             {"key": "access_token", "label": "Private App Access Token", "type": "password"},
         ],
         "help_text": """**How to set up:**
-1. Go to your HubSpot account → Settings → Integrations → Private Apps
+1. Go to HubSpot > Settings > Integrations > Private Apps
 2. Create a new private app
 3. Add scopes: `crm.objects.contacts.read`, `crm.objects.deals.read`
 4. Copy the access token""",
@@ -49,7 +48,7 @@ INTEGRATION_CONFIGS = {
     "linear": {
         "name": "Linear",
         "icon": "📋",
-        "description": "Connect Linear to detect project management patterns and identify issue workflows that Claude can streamline.",
+        "description": "Connect Linear to detect project management patterns Claude can streamline.",
         "fields": [
             {"key": "api_key", "label": "API Key", "type": "password"},
         ],
@@ -61,7 +60,7 @@ INTEGRATION_CONFIGS = {
     "github": {
         "name": "GitHub",
         "icon": "🐙",
-        "description": "Connect GitHub to detect code review patterns and identify opportunities for Claude Code automation.",
+        "description": "Connect GitHub to detect code review patterns and Claude Code opportunities.",
         "fields": [
             {"key": "token", "label": "Personal Access Token", "type": "password"},
             {"key": "org", "label": "Organization (optional)", "type": "text"},
@@ -80,9 +79,8 @@ def render():
     user_id = st.session_state.get("current_user_id")
 
     st.title("Integrations")
-    st.caption("Connect your tools so the Learning Hub can detect what you need to learn")
+    st.caption("Connect your tools so the Learning Hub can personalize your training")
 
-    # ── Current Integrations ────────────────────────────────
     existing = session.query(Integration).filter_by(user_id=user_id).all()
     existing_platforms = {i.platform: i for i in existing}
 
@@ -91,17 +89,10 @@ def render():
         is_connected = integration and integration.is_active
 
         with st.container(border=True):
-            header_col, status_col = st.columns([5, 1])
-
-            with header_col:
-                st.subheader(f"{config['icon']} {config['name']}")
-                st.write(config["description"])
-
-            with status_col:
-                if is_connected:
-                    st.success("Connected")
-                else:
-                    st.caption("Not connected")
+            # Header with status inline
+            status_badge = "✅ Connected" if is_connected else ""
+            st.subheader(f"{config['icon']} {config['name']} {status_badge}")
+            st.write(config["description"])
 
             with st.expander("Configure" if not is_connected else "Settings"):
                 st.markdown(config["help_text"])
@@ -123,7 +114,7 @@ def render():
                             field["label"],
                             value=existing_creds.get(field["key"], ""),
                             key=f"{platform_key}_{field['key']}",
-                            height=100,
+                            height=80,
                         )
                     else:
                         field_values[field["key"]] = st.text_input(
@@ -132,39 +123,36 @@ def render():
                             key=f"{platform_key}_{field['key']}",
                         )
 
-                btn_col1, btn_col2 = st.columns(2)
-
-                with btn_col1:
-                    if st.button(
-                        "Connect" if not is_connected else "Update",
-                        key=f"connect_{platform_key}",
-                    ):
-                        # Validate at least one field is filled
-                        if any(v.strip() for v in field_values.values()):
-                            if integration:
-                                integration.set_credentials(field_values)
-                                integration.is_active = True
-                            else:
-                                integration = Integration(
-                                    user_id=user_id,
-                                    platform=platform_key,
-                                    is_active=True,
-                                )
-                                integration.set_credentials(field_values)
-                                session.add(integration)
-                            session.commit()
-                            st.success(f"{config['name']} connected!")
-                            st.rerun()
+                # Buttons stacked for mobile
+                if st.button(
+                    "Connect" if not is_connected else "Update",
+                    key=f"connect_{platform_key}",
+                    use_container_width=True,
+                ):
+                    if any(v.strip() for v in field_values.values()):
+                        if integration:
+                            integration.set_credentials(field_values)
+                            integration.is_active = True
                         else:
-                            st.error("Please fill in the required fields.")
+                            integration = Integration(
+                                user_id=user_id,
+                                platform=platform_key,
+                                is_active=True,
+                            )
+                            integration.set_credentials(field_values)
+                            session.add(integration)
+                        session.commit()
+                        st.success(f"{config['name']} connected!")
+                        st.rerun()
+                    else:
+                        st.error("Please fill in the required fields.")
 
-                with btn_col2:
-                    if is_connected:
-                        if st.button("Disconnect", key=f"disconnect_{platform_key}"):
-                            integration.is_active = False
-                            session.commit()
-                            st.info(f"{config['name']} disconnected.")
-                            st.rerun()
+                if is_connected:
+                    if st.button("Disconnect", key=f"disconnect_{platform_key}", use_container_width=True):
+                        integration.is_active = False
+                        session.commit()
+                        st.info(f"{config['name']} disconnected.")
+                        st.rerun()
 
     # ── Sync Status ─────────────────────────────────────────
     st.divider()
@@ -174,16 +162,13 @@ def render():
     if active_integrations:
         for integration in active_integrations:
             config = INTEGRATION_CONFIGS.get(integration.platform, {})
-            col1, col2, col3 = st.columns([3, 2, 1])
-            with col1:
-                st.write(f"{config.get('icon', '🔗')} {config.get('name', integration.platform)}")
-            with col2:
+            with st.container(border=True):
+                st.write(f"{config.get('icon', '🔗')} **{config.get('name', integration.platform)}**")
                 if integration.last_synced:
                     st.caption(f"Last sync: {integration.last_synced}")
                 else:
                     st.caption("Never synced")
-            with col3:
-                if st.button("Sync Now", key=f"sync_{integration.platform}"):
+                if st.button("Sync Now", key=f"sync_{integration.platform}", use_container_width=True):
                     st.info(f"Syncing {config.get('name', integration.platform)}... (Configure your API credentials to enable live sync)")
     else:
         st.info("No active integrations. Connect a tool above to get started.")

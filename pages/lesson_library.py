@@ -12,29 +12,25 @@ def render():
     st.title("Lesson Library")
     st.caption("Browse all available Claude tools training materials")
 
-    # ── Filters ─────────────────────────────────────────────
-    col1, col2, col3, col4 = st.columns(4)
+    # ── Filters: 2 rows of 2 columns (mobile-friendly) ─────
+    search_query = st.text_input("Search", placeholder="Search lessons...")
 
-    with col1:
-        search_query = st.text_input("Search", placeholder="Search lessons...")
-
-    with col2:
+    f1, f2, f3 = st.columns(3)
+    with f1:
         tool_filter = st.selectbox(
             "Tool",
             ["All"] + sorted(set(
                 l.tool_name for l in session.query(Lesson).all() if l.tool_name
             )),
         )
-
-    with col3:
+    with f2:
         category_filter = st.selectbox(
             "Category",
             ["All"] + sorted(set(
                 l.category for l in session.query(Lesson).all() if l.category
             )),
         )
-
-    with col4:
+    with f3:
         difficulty_filter = st.selectbox(
             "Difficulty",
             ["All", "beginner", "intermediate", "advanced"],
@@ -75,47 +71,42 @@ def render():
         status_icon = {"not_started": "📘", "in_progress": "📖", "completed": "✅"}.get(status, "📘")
 
         with st.expander(f"{status_icon} {lesson.title}"):
-            meta_col, action_col = st.columns([4, 1])
+            difficulty_colors = {"beginner": "green", "intermediate": "orange", "advanced": "red"}
+            badge = difficulty_colors.get(lesson.difficulty, "gray")
+            st.caption(
+                f":{badge}[{lesson.difficulty}] | **{lesson.tool_name}** | {lesson.category} | "
+                f"Source: {lesson.source}"
+            )
+            st.write(lesson.summary)
 
-            with meta_col:
-                difficulty_colors = {"beginner": "green", "intermediate": "orange", "advanced": "red"}
-                badge = difficulty_colors.get(lesson.difficulty, "gray")
-                st.caption(
-                    f":{badge}[{lesson.difficulty}] | **{lesson.tool_name}** | {lesson.category} | "
-                    f"Source: {lesson.source}"
-                )
-                st.write(lesson.summary)
+            if lesson.tags:
+                tag_str = " ".join([f"`{t.name}`" for t in lesson.tags])
+                st.caption(f"Tags: {tag_str}")
 
-                # Show tags
-                if lesson.tags:
-                    tag_str = " ".join([f"`{t.name}`" for t in lesson.tags])
-                    st.caption(f"Tags: {tag_str}")
-
-            with action_col:
-                if status == "not_started":
-                    if st.button("Start Learning", key=f"lib_start_{lesson.id}"):
-                        progress = LearningProgress(
-                            user_id=user_id,
-                            lesson_id=lesson.id,
-                            status="in_progress",
-                            started_at=datetime.now(timezone.utc),
-                        )
-                        session.add(progress)
+            # Action button — full width for mobile
+            if status == "not_started":
+                if st.button("Start Learning", key=f"lib_start_{lesson.id}", use_container_width=True):
+                    progress = LearningProgress(
+                        user_id=user_id,
+                        lesson_id=lesson.id,
+                        status="in_progress",
+                        started_at=datetime.now(timezone.utc),
+                    )
+                    session.add(progress)
+                    session.commit()
+                    st.rerun()
+            elif status == "in_progress":
+                if st.button("Mark Complete", key=f"lib_complete_{lesson.id}", use_container_width=True):
+                    p = session.query(LearningProgress).filter_by(
+                        user_id=user_id, lesson_id=lesson.id
+                    ).first()
+                    if p:
+                        p.status = "completed"
+                        p.completed_at = datetime.now(timezone.utc)
                         session.commit()
-                        st.rerun()
-                elif status == "in_progress":
-                    st.caption("📖 In Progress")
-                    if st.button("Complete", key=f"lib_complete_{lesson.id}"):
-                        p = session.query(LearningProgress).filter_by(
-                            user_id=user_id, lesson_id=lesson.id
-                        ).first()
-                        if p:
-                            p.status = "completed"
-                            p.completed_at = datetime.now(timezone.utc)
-                            session.commit()
-                        st.rerun()
-                else:
-                    st.caption("✅ Completed")
+                    st.rerun()
+            else:
+                st.caption("✅ Completed")
 
             # Full content
             st.divider()

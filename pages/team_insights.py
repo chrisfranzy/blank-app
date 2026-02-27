@@ -10,7 +10,7 @@ def render():
     session = get_session()
 
     st.title("Team Insights")
-    st.caption("See what your team is learning, where they need help, and share knowledge")
+    st.caption("What your team is learning, where they need help, and shared knowledge")
 
     engine = LearningEngine(session)
 
@@ -21,42 +21,38 @@ def render():
 
     insights = engine.get_team_insights(team_filter)
 
-    # ── Team Metrics ────────────────────────────────────────
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Total Activity Signals", insights["total_signals"])
-    with col2:
-        st.metric("Automation Opportunities", insights["automation_opportunities"])
-    with col3:
+    # ── Team Metrics (stacks 2-up on mobile via CSS) ────────
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        st.metric("Signals", insights["total_signals"])
+    with m2:
+        st.metric("Opportunities", insights["automation_opportunities"])
+    with m3:
         member_count = session.query(User).count() if not team_filter else session.query(User).filter_by(team=team_filter).count()
-        st.metric("Team Members", member_count)
+        st.metric("Members", member_count)
 
     st.divider()
 
-    # ── Top Tools & Topics ──────────────────────────────────
-    col_left, col_right = st.columns(2)
+    # ── Top Tools & Topics (stacks on mobile) ───────────────
+    st.subheader("Most Used Tools")
+    if insights["top_tools"]:
+        for tool, count in insights["top_tools"]:
+            st.progress(min(count / max(insights["top_tools"][0][1], 1), 1.0), text=f"{tool}: {count} mentions")
+    else:
+        st.caption("No tool activity yet. Connect integrations and load data.")
 
-    with col_left:
-        st.subheader("Most Used Tools")
-        if insights["top_tools"]:
-            for tool, count in insights["top_tools"]:
-                st.progress(min(count / max(insights["top_tools"][0][1], 1), 1.0), text=f"{tool}: {count} mentions")
-        else:
-            st.caption("No tool activity detected yet. Connect integrations and load data.")
-
-    with col_right:
-        st.subheader("Hot Topics")
-        if insights["top_topics"]:
-            for topic, count in insights["top_topics"]:
-                st.progress(min(count / max(insights["top_topics"][0][1], 1), 1.0), text=f"{topic}: {count} mentions")
-        else:
-            st.caption("No topic activity detected yet.")
+    st.subheader("Hot Topics")
+    if insights["top_topics"]:
+        for topic, count in insights["top_topics"]:
+            st.progress(min(count / max(insights["top_topics"][0][1], 1), 1.0), text=f"{topic}: {count} mentions")
+    else:
+        st.caption("No topic activity yet.")
 
     st.divider()
 
-    # ── Common Questions (from Slack/Email) ─────────────────
-    st.subheader("What People Are Asking About")
-    st.caption("Questions and struggles detected across your connected platforms")
+    # ── Common Questions ────────────────────────────────────
+    st.subheader("What People Are Asking")
+    st.caption("Questions detected across connected platforms")
 
     help_signals = (
         session.query(ActivitySignal)
@@ -79,7 +75,7 @@ def render():
                     tags = " ".join([f"`{t}`" for t in tools + topics])
                     st.caption(f"Related: {tags}")
     else:
-        st.info("No questions detected yet. Connect Slack or other platforms to see what your team is asking about.")
+        st.info("No questions detected yet. Connect Slack or other platforms.")
 
     st.divider()
 
@@ -96,12 +92,12 @@ def render():
         leaderboard.append({
             "Name": user.name,
             "Team": user.team,
-            "Completed": score["completed"],
-            "In Progress": score["in_progress"],
-            "Completion %": score["completion_pct"],
+            "Done": score["completed"],
+            "Active": score["in_progress"],
+            "%": score["completion_pct"],
         })
 
-    leaderboard.sort(key=lambda x: x["Completed"], reverse=True)
+    leaderboard.sort(key=lambda x: x["Done"], reverse=True)
 
     if leaderboard:
         st.dataframe(leaderboard, use_container_width=True, hide_index=True)
@@ -111,7 +107,6 @@ def render():
     # ── Shared Lessons ──────────────────────────────────────
     st.divider()
     st.subheader("Shared Team Lessons")
-    st.caption("Lessons created by team members for the team")
 
     shared = session.query(Lesson).filter(
         Lesson.is_shared == True,
@@ -120,10 +115,10 @@ def render():
 
     if shared:
         for lesson in shared:
-            with st.expander(f"📝 {lesson.title} (by user #{lesson.author_id})"):
+            with st.expander(f"📝 {lesson.title}"):
                 st.write(lesson.summary)
                 st.markdown(lesson.content_markdown)
     else:
-        st.info("No shared lessons yet. Team members can create lessons from the Settings page.")
+        st.info("No shared lessons yet. Create one from Settings.")
 
     session.close()

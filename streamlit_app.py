@@ -17,8 +17,12 @@ st.set_page_config(
     page_title="Claude Learning Hub",
     page_icon="🧠",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
+
+# ── Mobile CSS ──────────────────────────────────────────────
+from components.mobile_css import inject_mobile_css
+inject_mobile_css()
 
 # ── Initialize DB ───────────────────────────────────────────
 from data.database import init_db, get_session, User, Lesson, Tag, ActivitySignal, LearningProgress
@@ -107,24 +111,28 @@ def load_demo_signals():
 
 
 # ── Sidebar Navigation ─────────────────────────────────────
-st.sidebar.title("Claude Learning Hub")
-st.sidebar.caption("Personalized AI training for your team")
+st.sidebar.markdown("### Claude Learning Hub")
 
-page = st.sidebar.radio(
+# Navigation with icons for quick scanning on mobile
+NAV_ITEMS = {
+    "📊 Dashboard": "Dashboard",
+    "📖 My Path": "My Learning Path",
+    "🔍 Discover": "Discover",
+    "📚 Library": "Lesson Library",
+    "📋 Reference": "Claude Reference",
+    "👥 Team": "Team Insights",
+    "🔗 Connect": "Integrations",
+    "🆕 Updates": "Tool Updates",
+    "⚙️ Settings": "Settings",
+}
+
+selected_nav = st.sidebar.radio(
     "Navigate",
-    [
-        "Dashboard",
-        "My Learning Path",
-        "Discover",
-        "Lesson Library",
-        "Claude Reference",
-        "Team Insights",
-        "Integrations",
-        "Tool Updates",
-        "Settings",
-    ],
+    options=list(NAV_ITEMS.keys()),
     index=0,
+    label_visibility="collapsed",
 )
+page = NAV_ITEMS[selected_nav]
 
 st.sidebar.divider()
 
@@ -144,8 +152,7 @@ if user_names:
     st.session_state.current_user_id = selected_user
 
 # Demo data loader
-st.sidebar.divider()
-if st.sidebar.button("Load Demo Data", help="Load sample activity signals to see the platform in action"):
+if st.sidebar.button("Load Demo Data", use_container_width=True):
     load_demo_signals()
     st.sidebar.success("Demo data loaded!")
     st.rerun()
