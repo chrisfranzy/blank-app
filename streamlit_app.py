@@ -34,8 +34,9 @@ def initialize_app():
         # Seed lessons if empty
         if session.query(Lesson).count() == 0:
             for lesson_data in SEED_LESSONS:
-                tags_list = lesson_data.pop("tags", [])
-                lesson = Lesson(**lesson_data, source="system")
+                ld = {k: v for k, v in lesson_data.items() if k != "tags"}
+                tags_list = lesson_data.get("tags", [])
+                lesson = Lesson(**ld, source="system")
                 lesson.relevance_score = 0.7
 
                 for tag_name in tags_list:
@@ -114,7 +115,9 @@ page = st.sidebar.radio(
     [
         "Dashboard",
         "My Learning Path",
+        "Discover",
         "Lesson Library",
+        "Claude Reference",
         "Team Insights",
         "Integrations",
         "Tool Updates",
@@ -157,9 +160,17 @@ elif page == "My Learning Path":
     from pages import learning_path
     learning_path.render()
 
+elif page == "Discover":
+    from pages import discover
+    discover.render()
+
 elif page == "Lesson Library":
     from pages import lesson_library
     lesson_library.render()
+
+elif page == "Claude Reference":
+    from pages import claude_reference
+    claude_reference.render()
 
 elif page == "Team Insights":
     from pages import team_insights
