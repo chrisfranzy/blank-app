@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   ATELIER — Warm editorial design system
+   ============================================ */
+
+@layer base {
+  :root {
+    --grain-opacity: 0.035;
+  }
+
+  body {
+    background: #0c0c14;
+    color: #e8e4df;
+  }
+
+  ::selection {
+    background: rgba(224, 122, 95, 0.3);
+    color: #fff;
+  }
+}
+
+/* Film grain overlay */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a46;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a56;
+}
+
+/* Safe area */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Staggered reveal animations */
+.stagger > * {
+  opacity: 0;
+  animation: fade-up 0.5s ease-out forwards;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+.stagger > *:nth-child(7) { animation-delay: 360ms; }
+.stagger > *:nth-child(8) { animation-delay: 420ms; }
+.stagger > *:nth-child(9) { animation-delay: 480ms; }
+.stagger > *:nth-child(10) { animation-delay: 540ms; }
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Hover lift */
+.hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(224, 122, 95, 0.08);
+}
+
+/* Glow on hover */
+.glow-coral {
+  transition: box-shadow 0.3s ease;
+}
+.glow-coral:hover {
+  box-shadow: 0 0 20px rgba(224, 122, 95, 0.2), 0 0 60px rgba(224, 122, 95, 0.05);
+}
+
+/* Card surfaces */
+@layer components {
+  .card-surface {
+    @apply bg-surface-1 border border-surface-3 rounded-2xl;
+    background: linear-gradient(145deg, rgba(26, 26, 46, 0.6) 0%, rgba(18, 18, 30, 0.9) 100%);
+  }
+
+  .card-surface-hover {
+    @apply card-surface transition-all duration-300;
+  }
+  .card-surface-hover:hover {
+    @apply border-surface-4;
+    background: linear-gradient(145deg, rgba(34, 34, 58, 0.7) 0%, rgba(22, 22, 36, 0.9) 100%);
+  }
+}
+
+/* Prose — lesson content rendering */
+.prose-lesson {
+  @apply text-ink/85 leading-relaxed font-body;
+}
+.prose-lesson h2 {
+  @apply text-xl font-display font-semibold text-ink mt-10 mb-4 tracking-tight;
+}
+.prose-lesson h3 {
+  @apply text-lg font-display font-medium text-ink/95 mt-7 mb-3;
+}
+.prose-lesson p {
+  @apply mb-4 leading-7;
+  font-size: 15px;
+}
+.prose-lesson ul {
+  @apply mb-4 ml-5 space-y-1.5;
+}
+.prose-lesson li {
+  @apply list-disc text-ink/80;
+  font-size: 15px;
+}
+.prose-lesson strong {
+  @apply text-ink font-semibold;
+}
+.prose-lesson code {
+  @apply bg-surface-3 text-accent-sand px-1.5 py-0.5 rounded-md font-mono;
+  font-size: 13px;
+}
+.prose-lesson pre {
+  @apply bg-surface-2 border border-surface-3 rounded-xl p-5 mb-5 overflow-x-auto;
+}
+.prose-lesson pre code {
+  @apply bg-transparent text-ink/80 p-0 leading-6;
+  font-size: 13px;
+}
+.prose-lesson blockquote {
+  @apply border-l-2 border-accent-coral/40 pl-5 italic text-ink-muted my-5;
+}
+
+/* Gradient text */
+.text-gradient-coral {
+  background: linear-gradient(135deg, #e07a5f 0%, #f2cc8f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-sage {
+  background: linear-gradient(135deg, #81b29a 0%, #a8d5ba 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hide scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

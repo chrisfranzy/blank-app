@@ -1,19 +1,38 @@
-# 🎈 Blank app template
+# Claude Learning Hub
 
-A simple Streamlit app template for you to modify!
+Personalized AI tools training platform for teams. Scans your connected platforms (Slack, email, HubSpot, Linear) to recommend the right Claude tools and lessons for each person.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+## Tech Stack
 
-### How to run it on your own machine
+- **Next.js 15** (App Router) — React framework with SSR
+- **TypeScript** — Type safety
+- **Tailwind CSS** — Utility-first responsive design
+- **Lucide React** — Icons
+- **Vercel** — Deployment
 
-1. Install the requirements
+## Getting Started
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+```bash
+npm install
+npm run dev
+```
 
-2. Run the app
+Open [http://localhost:3000](http://localhost:3000).
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+## Deploy to Vercel
+
+```bash
+npx vercel
+```
+
+## Pages
+
+- **Dashboard** — Learning progress overview and recommendations
+- **Discover** — Search and filter all lessons
+- **Library** — Browse lessons by tool
+- **My Path** — Personal learning journey
+- **Reference** — Claude tools documentation
+- **Team** — Team-wide learning analytics
+- **Integrations** — Connect Slack, Gmail, HubSpot, Linear, GitHub
+- **Updates** — Latest Claude tool features
+- **Settings** — Profile and preferences
