@@ -12,14 +12,19 @@ import {
   Code,
   Link as LinkIcon,
   Bot,
+  ExternalLink,
+  MessageCircle,
 } from "lucide-react";
 import { getLessonById } from "@/data/lessons";
 import { LessonContent } from "@/components/lessons/lesson-content";
 import { Badge } from "@/components/ui/badge";
 import { cn, getDifficultyColor, getCategoryColor } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getLessonProgress, setLessonProgress } from "@/lib/storage";
+import { ProgressStatus } from "@/types";
 
 const toolIcons: Record<string, React.ElementType> = {
+  Claude: MessageCircle,
   "Claude Code": Terminal,
   "Claude Cowork": Monitor,
   MCP: Plug,
@@ -32,7 +37,22 @@ export default function LessonDetailPage() {
   const params = useParams();
   const router = useRouter();
   const lesson = getLessonById(params.id as string);
-  const [status, setStatus] = useState<"not_started" | "in_progress" | "completed">("not_started");
+  const [status, setStatus] = useState<ProgressStatus>("not_started");
+
+  // Load progress from localStorage on mount
+  useEffect(() => {
+    if (!lesson) return;
+    const progress = getLessonProgress(lesson.id);
+    if (progress) {
+      setStatus(progress.status);
+    }
+  }, [lesson]);
+
+  function handleStatusChange(newStatus: ProgressStatus) {
+    if (!lesson) return;
+    setStatus(newStatus);
+    setLessonProgress(lesson.id, newStatus);
+  }
 
   if (!lesson) {
     return (
@@ -63,7 +83,6 @@ export default function LessonDetailPage() {
 
       {/* Header */}
       <div className="mb-10 relative">
-        {/* Decorative blob */}
         <div className="absolute -top-8 -right-16 w-48 h-48 bg-accent-coral/[0.04] rounded-full blur-3xl" />
 
         <div className="flex items-center gap-3 mb-5 relative">
@@ -73,6 +92,11 @@ export default function LessonDetailPage() {
           <span className="text-xs font-mono text-ink-faint uppercase tracking-[0.15em]">
             {lesson.toolName}
           </span>
+          {lesson.skilljarCourse && (
+            <span className="text-xs text-ink-faint">
+              &middot; {lesson.skilljarCourse}
+            </span>
+          )}
         </div>
 
         <h1 className="text-2xl md:text-4xl font-display font-bold text-ink tracking-tight mb-4 relative">
@@ -101,10 +125,10 @@ export default function LessonDetailPage() {
         </div>
 
         {/* Action */}
-        <div className="flex gap-3 mt-8 relative">
+        <div className="flex gap-3 mt-8 relative flex-wrap">
           {status === "not_started" && (
             <button
-              onClick={() => setStatus("in_progress")}
+              onClick={() => handleStatusChange("in_progress")}
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent-coral to-accent-sand text-surface-0 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity glow-coral"
             >
               <PlayCircle className="w-4 h-4" />
@@ -113,7 +137,7 @@ export default function LessonDetailPage() {
           )}
           {status === "in_progress" && (
             <button
-              onClick={() => setStatus("completed")}
+              onClick={() => handleStatusChange("completed")}
               className="flex items-center gap-2 px-6 py-3 bg-accent-sage text-surface-0 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -125,6 +149,18 @@ export default function LessonDetailPage() {
               <CheckCircle2 className="w-4 h-4" />
               Completed
             </div>
+          )}
+
+          {lesson.skilljarUrl && (
+            <a
+              href={lesson.skilljarUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-3 bg-surface-2 text-ink-muted hover:text-ink rounded-xl font-medium text-sm border border-surface-3 hover:border-surface-4 transition-all"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Full Course on Anthropic Academy
+            </a>
           )}
         </div>
       </div>

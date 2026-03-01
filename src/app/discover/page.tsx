@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { LessonCard } from "@/components/lessons/lesson-card";
 import { lessons, getAllTools, getAllCategories } from "@/data/lessons";
 import { cn } from "@/lib/utils";
-import { Difficulty } from "@/types";
+import { Difficulty, ProgressStatus } from "@/types";
+import { getProgress } from "@/lib/storage";
 
 export default function DiscoverPage() {
   const [search, setSearch] = useState("");
@@ -13,9 +14,19 @@ export default function DiscoverPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [progressMap, setProgressMap] = useState<Record<string, ProgressStatus>>({});
 
   const tools = getAllTools();
   const categories = getAllCategories();
+
+  useEffect(() => {
+    const allProgress = getProgress();
+    const map: Record<string, ProgressStatus> = {};
+    for (const [id, p] of Object.entries(allProgress)) {
+      map[id] = p.status;
+    }
+    setProgressMap(map);
+  }, []);
 
   const filteredLessons = useMemo(() => {
     return lessons.filter((lesson) => {
@@ -45,7 +56,6 @@ export default function DiscoverPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Header */}
       <div>
         <p className="text-xs font-mono text-ink-faint uppercase tracking-[0.2em] mb-2">
           Discover
@@ -162,7 +172,11 @@ export default function DiscoverPage() {
 
       <div className="grid md:grid-cols-2 gap-4 stagger">
         {filteredLessons.map((lesson) => (
-          <LessonCard key={lesson.id} lesson={lesson} />
+          <LessonCard
+            key={lesson.id}
+            lesson={lesson}
+            progress={progressMap[lesson.id]}
+          />
         ))}
       </div>
 

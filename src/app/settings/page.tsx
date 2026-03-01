@@ -1,20 +1,60 @@
 "use client";
 
-import { useState } from "react";
-import { User, Bell, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Bell, Shield, Check } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
+import { getSettings, saveSettings, resetAllProgress, UserSettings } from "@/lib/storage";
 
 export default function SettingsPage() {
-  const [name, setName] = useState("Chris");
-  const [email, setEmail] = useState("chris@company.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [team, setTeam] = useState("Engineering");
-  const [role, setRole] = useState("admin");
+  const [role, setRole] = useState<"admin" | "member">("member");
   const [notifications, setNotifications] = useState({
     newLessons: true,
     toolUpdates: true,
     teamActivity: false,
     weeklyDigest: true,
   });
+  const [saved, setSaved] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState(false);
+
+  // Load settings from localStorage
+  useEffect(() => {
+    const s = getSettings();
+    setName(s.name);
+    setEmail(s.email);
+    setTeam(s.team);
+    setRole(s.role);
+    setNotifications(s.notifications);
+  }, []);
+
+  function handleSave() {
+    const settings: UserSettings = { name, email, team, role, notifications };
+    saveSettings(settings);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  function handleReset() {
+    if (!resetConfirm) {
+      setResetConfirm(true);
+      setTimeout(() => setResetConfirm(false), 3000);
+      return;
+    }
+    resetAllProgress();
+    setResetConfirm(false);
+    window.location.reload();
+  }
+
+  // Auto-save notifications on toggle
+  function toggleNotification(key: string) {
+    setNotifications((prev) => {
+      const updated = { ...prev, [key]: !prev[key as keyof typeof prev] };
+      saveSettings({ name, email, team, role, notifications: updated });
+      return updated;
+    });
+  }
 
   const inputClass =
     "w-full bg-surface-2 border border-surface-3 rounded-xl px-4 py-3 text-sm text-ink font-body focus:outline-none focus:border-accent-coral/30 focus:ring-1 focus:ring-accent-coral/10 transition-all";
@@ -41,11 +81,11 @@ export default function SettingsPage() {
         <div className="space-y-5">
           <div>
             <label className={labelClass}>Name</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Your name" />
           </div>
           <div>
             <label className={labelClass}>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="you@company.com" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -60,14 +100,24 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className={labelClass}>Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)} className={inputClass}>
+              <select value={role} onChange={(e) => setRole(e.target.value as "admin" | "member")} className={inputClass}>
                 <option value="admin">Admin</option>
                 <option value="member">Member</option>
               </select>
             </div>
           </div>
-          <button className="px-5 py-2.5 bg-gradient-to-r from-accent-coral to-accent-sand text-surface-0 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">
-            Save Profile
+          <button
+            onClick={handleSave}
+            className="px-5 py-2.5 bg-gradient-to-r from-accent-coral to-accent-sand text-surface-0 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
+          >
+            {saved ? (
+              <>
+                <Check className="w-4 h-4" />
+                Saved
+              </>
+            ) : (
+              "Save Profile"
+            )}
           </button>
         </div>
       </Card>
@@ -93,7 +143,7 @@ export default function SettingsPage() {
                 </p>
               </div>
               <button
-                onClick={() => setNotifications((prev) => ({ ...prev, [key]: !value }))}
+                onClick={() => toggleNotification(key)}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
                   value
                     ? "bg-gradient-to-r from-accent-coral to-accent-sand"
@@ -124,8 +174,11 @@ export default function SettingsPage() {
               Clear all learning progress and start over
             </p>
           </div>
-          <button className="px-4 py-2 bg-accent-coral/10 text-accent-coral rounded-xl text-sm font-medium hover:bg-accent-coral/20 transition-colors border border-accent-coral/20">
-            Reset
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 bg-accent-coral/10 text-accent-coral rounded-xl text-sm font-medium hover:bg-accent-coral/20 transition-colors border border-accent-coral/20"
+          >
+            {resetConfirm ? "Confirm Reset" : "Reset"}
           </button>
         </div>
       </Card>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2, Circle, PlayCircle, Trophy } from "lucide-react";
 import { LessonCard } from "@/components/lessons/lesson-card";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { lessons } from "@/data/lessons";
+import { getProgress } from "@/lib/storage";
 import { ProgressStatus } from "@/types";
 
 interface PathLesson {
@@ -14,16 +15,16 @@ interface PathLesson {
 }
 
 export default function PathPage() {
-  const [pathLessons] = useState<PathLesson[]>([
-    { id: "claude-code-intro", status: "completed" },
-    { id: "prompt-engineering", status: "completed" },
-    { id: "claude-md-config", status: "completed" },
-    { id: "mcp-intro", status: "in_progress" },
-    { id: "claude-api-tool-use", status: "in_progress" },
-    { id: "slack-bot-automation", status: "not_started" },
-    { id: "security-best-practices", status: "not_started" },
-    { id: "agent-sdk-intro", status: "not_started" },
-  ]);
+  const [pathLessons, setPathLessons] = useState<PathLesson[]>([]);
+
+  useEffect(() => {
+    const progress = getProgress();
+    const path: PathLesson[] = lessons.map((l) => ({
+      id: l.id,
+      status: progress[l.id]?.status ?? "not_started",
+    }));
+    setPathLessons(path);
+  }, []);
 
   const completedCount = pathLessons.filter((p) => p.status === "completed").length;
   const totalCount = pathLessons.length;
@@ -63,7 +64,6 @@ export default function PathPage() {
         </p>
       </div>
 
-      {/* Progress overview */}
       <Card>
         <div className="flex items-center gap-4 mb-5">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-coral/20 to-accent-sand/10 flex items-center justify-center">
@@ -74,14 +74,15 @@ export default function PathPage() {
               {completedCount} of {totalCount} completed
             </p>
             <p className="text-sm text-ink-muted">
-              {Math.round((completedCount / totalCount) * 100)}% of your path
+              {totalCount > 0
+                ? `${Math.round((completedCount / totalCount) * 100)}% of your path`
+                : "Start your learning journey"}
             </p>
           </div>
         </div>
         <ProgressBar value={completedCount} max={totalCount} />
       </Card>
 
-      {/* Sections */}
       {sections.map((section) => {
         if (section.lessons.length === 0) return null;
         return (

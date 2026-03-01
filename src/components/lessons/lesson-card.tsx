@@ -10,12 +10,15 @@ import {
   Link as LinkIcon,
   Bot,
   ArrowUpRight,
+  MessageCircle,
+  ExternalLink,
 } from "lucide-react";
 import { Lesson } from "@/types";
 import { cn, getDifficultyColor, getCategoryColor } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 const toolIcons: Record<string, React.ElementType> = {
+  Claude: MessageCircle,
   "Claude Code": Terminal,
   "Claude Cowork": Monitor,
   MCP: Plug,
@@ -50,9 +53,14 @@ export function LessonCard({ lesson, progress, compact }: LessonCardProps) {
             <h3 className="font-display font-medium text-ink text-[15px] leading-tight group-hover:text-accent-coral-light transition-colors line-clamp-2">
               {lesson.title}
             </h3>
-            <p className="text-xs text-ink-faint mt-0.5 font-mono">
-              {lesson.toolName}
-            </p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <p className="text-xs text-ink-faint font-mono">
+                {lesson.toolName}
+              </p>
+              {lesson.skilljarCourse && (
+                <ExternalLink className="w-3 h-3 text-ink-faint/50" />
+              )}
+            </div>
           </div>
         </div>
 

@@ -13,6 +13,8 @@ export interface Lesson {
   tags: string[];
   estimatedMinutes: number;
   createdAt: string;
+  skilljarUrl?: string;
+  skilljarCourse?: string;
 }
 
 export interface UserProgress {

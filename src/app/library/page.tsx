@@ -1,13 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LessonCard } from "@/components/lessons/lesson-card";
 import { lessons, getAllTools } from "@/data/lessons";
 import { cn } from "@/lib/utils";
+import { getProgress } from "@/lib/storage";
+import { ProgressStatus } from "@/types";
 
 export default function LibraryPage() {
   const [activeTool, setActiveTool] = useState("All");
+  const [progressMap, setProgressMap] = useState<Record<string, ProgressStatus>>({});
   const tools = ["All", ...getAllTools()];
+
+  useEffect(() => {
+    const allProgress = getProgress();
+    const map: Record<string, ProgressStatus> = {};
+    for (const [id, p] of Object.entries(allProgress)) {
+      map[id] = p.status;
+    }
+    setProgressMap(map);
+  }, []);
 
   const filtered =
     activeTool === "All"
@@ -48,7 +60,11 @@ export default function LibraryPage() {
 
       <div className="grid md:grid-cols-2 gap-4 stagger">
         {filtered.map((lesson) => (
-          <LessonCard key={lesson.id} lesson={lesson} />
+          <LessonCard
+            key={lesson.id}
+            lesson={lesson}
+            progress={progressMap[lesson.id]}
+          />
         ))}
       </div>
     </div>

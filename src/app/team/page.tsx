@@ -1,16 +1,20 @@
 "use client";
 
-import { Zap, MessageSquare, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Zap, MessageSquare, Trophy, Users } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { lessons } from "@/data/lessons";
+import { getCompletedLessonIds } from "@/lib/storage";
 
+// Team members - in a production app these would come from a database
 const teamMembers = [
-  { name: "Sarah Chen", role: "Engineering Lead", completed: 12, total: 17, topTool: "Claude Code", streak: 8 },
-  { name: "Mike Rodriguez", role: "Full-Stack Dev", completed: 8, total: 17, topTool: "Claude API", streak: 5 },
-  { name: "Priya Patel", role: "DevOps Engineer", completed: 6, total: 17, topTool: "MCP", streak: 3 },
-  { name: "James Kim", role: "Product Manager", completed: 4, total: 17, topTool: "Claude Cowork", streak: 2 },
-  { name: "Alex Johnson", role: "Junior Dev", completed: 3, total: 17, topTool: "Claude Code", streak: 7 },
+  { name: "Sarah Chen", role: "Engineering Lead", completed: 12, topTool: "Claude Code", streak: 8 },
+  { name: "Mike Rodriguez", role: "Full-Stack Dev", completed: 8, topTool: "Claude API", streak: 5 },
+  { name: "Priya Patel", role: "DevOps Engineer", completed: 6, topTool: "MCP", streak: 3 },
+  { name: "James Kim", role: "Product Manager", completed: 4, topTool: "Claude Cowork", streak: 2 },
+  { name: "Alex Johnson", role: "Junior Dev", completed: 3, topTool: "Claude Code", streak: 7 },
 ];
 
 const topQuestions = [
@@ -27,6 +31,24 @@ const automationOpportunities = [
 ];
 
 export default function TeamPage() {
+  const [yourCompleted, setYourCompleted] = useState(0);
+
+  useEffect(() => {
+    setYourCompleted(getCompletedLessonIds().length);
+  }, []);
+
+  const totalLessons = lessons.length;
+
+  // Include "You" in the leaderboard using real data
+  const allMembers = [
+    ...teamMembers.map((m) => ({ ...m, total: totalLessons, isYou: false })),
+    { name: "You", role: "Current user", completed: yourCompleted, topTool: "—", streak: 0, total: totalLessons, isYou: true },
+  ].sort((a, b) => b.completed - a.completed);
+
+  const avgCompletion = Math.round(
+    allMembers.reduce((sum, m) => sum + m.completed, 0) / allMembers.length / totalLessons * 100
+  );
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       <div>
@@ -42,8 +64,8 @@ export default function TeamPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger">
-        <MetricCard label="Members" value={5} detail="active learners" />
-        <MetricCard label="Avg. Completion" value="39%" trend="up" detail="+8% this week" />
+        <MetricCard label="Members" value={allMembers.length} detail="active learners" />
+        <MetricCard label="Avg. Completion" value={`${avgCompletion}%`} trend="up" detail="across team" />
         <MetricCard label="Top Tool" value="Code" detail="most popular" />
         <MetricCard label="Time Saved" value="~11h" trend="up" detail="per week estimated" />
       </div>
@@ -56,7 +78,7 @@ export default function TeamPage() {
             <CardTitle>Team Progress</CardTitle>
           </div>
           <div className="space-y-5">
-            {teamMembers.map((member, i) => (
+            {allMembers.map((member, i) => (
               <div key={member.name} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -64,7 +86,10 @@ export default function TeamPage() {
                       {i + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-ink">{member.name}</p>
+                      <p className={`text-sm font-medium ${member.isYou ? "text-accent-coral" : "text-ink"}`}>
+                        {member.name}
+                        {member.isYou && <span className="text-xs text-ink-faint ml-1.5">(you)</span>}
+                      </p>
                       <p className="text-[11px] text-ink-faint">{member.role}</p>
                     </div>
                   </div>
@@ -72,7 +97,9 @@ export default function TeamPage() {
                     <p className="text-sm text-ink-muted font-mono">
                       {member.completed}/{member.total}
                     </p>
-                    <p className="text-[11px] text-ink-faint">{member.streak}d streak</p>
+                    {member.streak > 0 && (
+                      <p className="text-[11px] text-ink-faint">{member.streak}d streak</p>
+                    )}
                   </div>
                 </div>
                 <ProgressBar value={member.completed} max={member.total} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Target, ArrowRight, Activity } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,13 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { LessonCard } from "@/components/lessons/lesson-card";
 import { lessons } from "@/data/lessons";
 import { demoSignals } from "@/data/demo-signals";
+import {
+  getCompletedLessonIds,
+  getInProgressLessonIds,
+  getStreak,
+  getSettings,
+  getProgress,
+} from "@/lib/storage";
 import Link from "next/link";
 
 const platformColors: Record<string, string> = {
@@ -19,13 +26,25 @@ const platformColors: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [completedLessons] = useState(["claude-code-intro", "prompt-engineering"]);
-  const [inProgressLessons] = useState(["mcp-intro", "claude-api-tool-use"]);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [inProgressLessons, setInProgressLessons] = useState<string[]>([]);
+  const [streak, setStreak] = useState(0);
+  const [userName, setUserName] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setCompletedLessons(getCompletedLessonIds());
+    setInProgressLessons(getInProgressLessonIds());
+    setStreak(getStreak());
+    const settings = getSettings();
+    setUserName(settings.name || "");
+    setMounted(true);
+  }, []);
 
   const totalLessons = lessons.length;
   const completedCount = completedLessons.length;
   const inProgressCount = inProgressLessons.length;
-  const completionPercent = Math.round((completedCount / totalLessons) * 100);
+  const completionPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   const recommended = lessons
     .filter(
@@ -34,7 +53,38 @@ export default function DashboardPage() {
     )
     .slice(0, 3);
 
+  // Calculate per-category progress from real data
+  const allProgress = mounted ? getProgress() : {};
+  const categoryStats = [
+    {
+      label: "Coding",
+      color: "bg-accent-sage",
+      total: lessons.filter((l) => l.category === "coding").length,
+      completed: lessons.filter(
+        (l) => l.category === "coding" && allProgress[l.id]?.status === "completed"
+      ).length,
+    },
+    {
+      label: "Automation",
+      color: "bg-accent-lavender",
+      total: lessons.filter((l) => l.category === "automation").length,
+      completed: lessons.filter(
+        (l) => l.category === "automation" && allProgress[l.id]?.status === "completed"
+      ).length,
+    },
+    {
+      label: "Practices",
+      color: "bg-accent-sand",
+      total: lessons.filter((l) => l.category === "best-practices").length,
+      completed: lessons.filter(
+        (l) => l.category === "best-practices" && allProgress[l.id]?.status === "completed"
+      ).length,
+    },
+  ];
+
   const recentSignals = demoSignals.slice(0, 4);
+
+  const greeting = userName ? `Welcome back, ${userName}` : "Welcome";
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -47,11 +97,19 @@ export default function DashboardPage() {
             Dashboard
           </p>
           <h1 className="text-3xl md:text-4xl font-display font-bold text-ink tracking-tight">
-            Welcome back,{" "}
-            <span className="text-gradient-coral">Chris</span>
+            {userName ? (
+              <>
+                Welcome back,{" "}
+                <span className="text-gradient-coral">{userName}</span>
+              </>
+            ) : (
+              "Welcome"
+            )}
           </h1>
           <p className="text-ink-muted mt-2 text-[15px] max-w-lg">
-            You&apos;re making great progress. Here&apos;s where you left off.
+            {completedCount > 0
+              ? "You're making great progress. Here's where you left off."
+              : "Start your learning journey with Anthropic's AI tools."}
           </p>
         </div>
       </div>
@@ -61,7 +119,7 @@ export default function DashboardPage() {
         <MetricCard
           label="Completed"
           value={completedCount}
-          trend="up"
+          trend={completedCount > 0 ? "up" : "stable"}
           detail={`of ${totalLessons} lessons`}
         />
         <MetricCard
@@ -72,14 +130,14 @@ export default function DashboardPage() {
         />
         <MetricCard
           label="Streak"
-          value="5d"
-          trend="up"
+          value={streak > 0 ? `${streak}d` : "0d"}
+          trend={streak > 0 ? "up" : "stable"}
           detail="learning streak"
         />
         <MetricCard
           label="Score"
           value={`${completionPercent}%`}
-          trend="up"
+          trend={completionPercent > 0 ? "up" : "stable"}
           detail="completion rate"
         />
       </div>
@@ -94,19 +152,15 @@ export default function DashboardPage() {
         </div>
         <ProgressBar value={completedCount} max={totalLessons} />
         <div className="grid grid-cols-3 gap-5 mt-5">
-          {[
-            { label: "Coding", count: 2, total: 5, color: "bg-accent-sage" },
-            { label: "Automation", count: 1, total: 6, color: "bg-accent-lavender" },
-            { label: "Practices", count: 1, total: 3, color: "bg-accent-sand" },
-          ].map((cat) => (
+          {categoryStats.map((cat) => (
             <div key={cat.label}>
               <div className="flex justify-between text-xs text-ink-muted mb-2">
                 <span className="font-mono uppercase tracking-wider text-[10px]">
                   {cat.label}
                 </span>
-                <span>{cat.count}/{cat.total}</span>
+                <span>{cat.completed}/{cat.total}</span>
               </div>
-              <ProgressBar value={cat.count} max={cat.total} color={cat.color} />
+              <ProgressBar value={cat.completed} max={cat.total} color={cat.color} />
             </div>
           ))}
         </div>
@@ -120,7 +174,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2.5">
               <Target className="w-5 h-5 text-accent-coral" strokeWidth={1.5} />
               <h2 className="text-lg font-display font-semibold text-ink">
-                Recommended
+                {inProgressLessons.length > 0 ? "Continue Learning" : "Recommended"}
               </h2>
             </div>
             <Link
@@ -131,9 +185,18 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-3 stagger">
-            {recommended.map((lesson) => (
-              <LessonCard key={lesson.id} lesson={lesson} />
-            ))}
+            {/* Show in-progress lessons first */}
+            {inProgressLessons.map((id) => {
+              const lesson = lessons.find((l) => l.id === id);
+              if (!lesson) return null;
+              return <LessonCard key={lesson.id} lesson={lesson} progress="in_progress" />;
+            })}
+            {/* Then recommendations */}
+            {recommended
+              .slice(0, Math.max(0, 3 - inProgressLessons.length))
+              .map((lesson) => (
+                <LessonCard key={lesson.id} lesson={lesson} />
+              ))}
           </div>
         </div>
 
