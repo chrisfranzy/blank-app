@@ -1859,6 +1859,353 @@ FDD analysis can enhance the Franzy Fit Score:
     createdAt: "2025-02-25",
   },
 
+  // ─── Franzy: Sales & Advisors ───
+  {
+    id: "franzy-advisor-matching",
+    title: "AI-Assisted Franchise Matching for Advisors",
+    summary:
+      "How Franzy advisors can use Claude to research brands, prep for client calls, and generate better Fit Score explanations during the matching process.",
+    content: `## AI-Assisted Matching for Franzy Advisors
+
+As a Franzy Advisor, you guide buyers through a 90-400+ day journey from discovery to ownership. Claude can help at every stage.
+
+### Pre-Call Research
+Before a client meeting, ask Claude to prep:
+\`\`\`
+"I have a call with a prospect who has $200K liquid,
+wants a semi-absentee QSR franchise in the Southeast.
+They're a former restaurant manager.
+
+Based on our brand portfolio, give me:
+1. Top 5 brand recommendations with reasoning
+2. Key talking points for each
+3. Potential objections they might raise
+4. Territory availability questions to ask"
+\`\`\`
+
+### Explaining Fit Scores
+Turn the numeric Fit Score into a conversation:
+\`\`\`
+"This investor scored 87 for Marco's Pizza and 62 for Jersey Mike's.
+Explain why in plain language, covering:
+- Financial fit (Item 7 investment range vs their capital)
+- Lifestyle fit (semi-absentee vs owner-operator)
+- Market fit (territory saturation in their area)
+- Experience fit (their background vs brand requirements)"
+\`\`\`
+
+### Track 1 vs Track 2 Routing
+Help classify prospects into the right sales track:
+- **Track 1**: Clear goals, qualified capital, ready to move → fast-track to matching
+- **Track 2**: Needs education, exploring, not sure about franchising → nurture sequence
+
+### Post-Call Notes
+After a client call, dictate notes and let Claude structure them:
+\`\`\`
+"Structure these call notes for HubSpot:
+- Client sentiment and readiness level
+- Brands discussed and reactions
+- Next steps and follow-up timeline
+- Any red flags or concerns"
+\`\`\`
+
+### Key Phrases to Know
+- "Maybe until it's a no" — support the exploration, don't pressure
+- "The only dog in the fight we have is you" — no brand-specific incentives
+- "Frick and fracking" — relationship management with FranDev teams`,
+    toolName: "Claude",
+    category: "communication",
+    difficulty: "beginner",
+    tags: ["advisors", "matching", "sales", "franzy"],
+    estimatedMinutes: 20,
+    createdAt: "2025-02-26",
+  },
+  {
+    id: "franzy-hubspot-pipeline",
+    title: "Claude + HubSpot: Managing the Franzy Pipeline",
+    summary:
+      "Use Claude to analyze your HubSpot pipeline, draft follow-ups, rate calls, and automate the two-way sync between Franzy Core and HubSpot CRM.",
+    content: `## HubSpot Pipeline Management with Claude
+
+Franzy Core has a two-way HubSpot sync. Claude can help you work smarter with your pipeline data.
+
+### Pipeline Health Check
+\`\`\`
+"Analyze my HubSpot pipeline and flag:
+- Deals stale for 14+ days with no activity
+- Prospects who completed Assessment but haven't booked a meeting
+- Connection Wizard intros that haven't had follow-up
+- Any deals where the prospect's liquid capital doesn't match the brand's Item 7 range"
+\`\`\`
+
+### Automated Call Ratings
+After advisor calls (from Fireflies transcripts):
+\`\`\`typescript
+const rateCall = async (transcript: string) => {
+  const response = await claude.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1024,
+    tools: [{
+      name: "rate_call",
+      description: "Rate a Franzy advisor call",
+      input_schema: {
+        type: "object",
+        properties: {
+          overallRating: { type: "number", minimum: 1, maximum: 10 },
+          prospectReadiness: { enum: ["not-ready", "exploring", "researching", "ready-to-invest"] },
+          brandsDiscussed: { type: "array", items: { type: "string" } },
+          nextSteps: { type: "array", items: { type: "string" } },
+          objections: { type: "array", items: { type: "string" } },
+          followUpDraft: { type: "string" }
+        }
+      }
+    }],
+    tool_choice: { type: "tool", name: "rate_call" },
+    messages: [{ role: "user", content: \`Rate this advisor call:\\n\${transcript}\` }]
+  });
+  return response.content[0].input;
+};
+\`\`\`
+
+### Key Metrics to Track
+- **Leads** → **Qualified Leads** ($50K liquid, $150K+ net worth)
+- **Booked Meetings** → **Match Requested** → **Match Made**
+- **Confirmation Days** → **Deals Closed**
+- **CPL** and **Cost per Deal**
+
+### Follow-Up Sequences
+Claude can draft stage-appropriate follow-ups:
+1. **Post-Assessment** → "Here are your top matches and why"
+2. **Post-Brand Call** → "Summary of what you learned + next steps"
+3. **Pre-Confirmation Day** → "What to expect and questions to prepare"
+4. **Post-Close** → Transition to FranzyOS onboarding`,
+    toolName: "Claude API",
+    category: "workflow",
+    difficulty: "intermediate",
+    tags: ["hubspot", "pipeline", "crm", "sales", "franzy"],
+    estimatedMinutes: 25,
+    createdAt: "2025-02-26",
+  },
+  {
+    id: "franzy-brief-content",
+    title: "Generating Content for The Franzy Brief",
+    summary:
+      "Use Claude to research franchise industry news, draft newsletter sections, and maintain the 70% open rate on Franzy's daily newsletter.",
+    content: `## Content Generation for The Franzy Brief
+
+The Franzy Brief is Franzy's daily newsletter with a 70% open rate. Claude can help research, draft, and maintain quality.
+
+### Newsletter Structure
+Each edition of The Franzy Brief includes:
+1. **Big Moves** — Major franchise industry news
+2. **Numbers That Matter** — Key stats and data points
+3. **Use This Today** — Actionable tip for franchise investors/operators
+4. **Random Franchise Fact** — Fun/surprising franchise trivia
+
+### Daily Research Workflow
+\`\`\`
+"Search for today's franchise industry news from:
+- Franchise Times
+- QSR Magazine
+- Restaurant Dive
+- IFA announcements
+- Franchising.com
+
+Summarize the top 3 stories in 2-3 sentences each.
+Flag any stories relevant to Franzy's brand partners."
+\`\`\`
+
+### Draft Generation
+\`\`\`
+"Draft today's Franzy Brief:
+
+Big Move: [paste news summary]
+Write in Brett's voice — conversational, knowledgeable, slightly irreverent.
+Keep it under 100 words per section.
+Include one data point or stat in 'Numbers That Matter.'
+Make 'Use This Today' actionable for someone considering franchise ownership."
+\`\`\`
+
+### SEO & Blog Content
+For franzy.com content marketing:
+- Franchise comparison articles ("Marco's Pizza vs Jersey Mike's: Which Is Right for You?")
+- Investment guides by category ("Best Home Service Franchises Under $100K")
+- Territory analysis content
+- FDD explainers for first-time buyers
+
+### Brand Spotlight Content
+For franchisor partners, generate:
+- Brand comparison pages
+- Investment breakdown articles
+- Success story templates
+- Territory availability updates`,
+    toolName: "Claude",
+    category: "communication",
+    difficulty: "beginner",
+    tags: ["newsletter", "content", "marketing", "franzy-brief", "franzy"],
+    estimatedMinutes: 15,
+    createdAt: "2025-02-26",
+  },
+  {
+    id: "franzy-os-data-ingestion",
+    title: "FranzyOS: Solving the Data Ingestion Challenge",
+    summary:
+      "How to use Claude and browser automation to ingest data from POS systems (Toast, Qu), payroll, and scheduling tools that don't have APIs.",
+    content: `## FranzyOS Data Ingestion
+
+The biggest technical challenge in FranzyOS: many franchise systems don't have APIs. Here's how Claude + automation can help.
+
+### The Problem
+Multi-unit operators (20-70 units) have data across:
+- **POS**: Toast, Qu, Brink/PAR (sales, tickets, menu mix)
+- **Labor**: HotSchedules, WiseTail (scheduling, training)
+- **Accounting**: Restaurant 365, Crunchtime (P&L, food cost)
+- **Reviews**: Google, Yelp (customer feedback)
+
+Most of these systems have limited or no APIs.
+
+### Browser Automation Approach
+Using Stagehand.dev + Browserbase.com:
+\`\`\`typescript
+// Example: Extract daily sales from Toast dashboard
+const session = await browserbase.createSession();
+const page = await session.newPage();
+
+// Navigate and authenticate
+await page.goto("https://pos.toasttab.com");
+await page.fill("#email", credentials.email);
+await page.fill("#password", credentials.password);
+
+// Navigate to reports
+await page.click('[data-testid="reports-nav"]');
+await page.click('[data-testid="daily-sales"]');
+
+// Extract data
+const salesData = await page.evaluate(() => {
+  // Parse the dashboard DOM for sales figures
+  return extractSalesTable();
+});
+
+// Store in ClickHouse for analytics
+await clickhouse.insert("daily_sales", salesData);
+\`\`\`
+
+### Claude for Data Normalization
+Different POS systems report data differently. Claude normalizes:
+\`\`\`
+"Normalize these Toast and Qu POS reports into a standard schema:
+- location_id, date, gross_sales, net_sales, ticket_count,
+  avg_ticket, labor_cost, food_cost, comps, voids
+Handle the different field names and formats between systems."
+\`\`\`
+
+### Credential Provisioning
+The biggest bottleneck. For each pilot partner:
+1. Request system credentials (POS, labor, accounting)
+2. Verify access levels (read-only minimum)
+3. Navigate corporate franchisor concerns (e.g., Jersey Mike's legal)
+4. Set up automated extraction schedules
+
+### Current Pilot Systems
+| Partner | POS | Other Systems |
+|---------|-----|---------------|
+| MPZ Hot (62 units) | Toast | WiseTail |
+| Walcorp (22 units) | Qu | Crunchtime, R365, Vantage Point |
+| KM Dev (8 units) | Mixed | — |
+| Onyx Brands | Toast, Brink/PAR | Operandio, HotSchedules |
+| PBHG (300+ units) | Multiple | Multiple |`,
+    toolName: "Claude Code",
+    category: "coding",
+    difficulty: "advanced",
+    tags: ["franzyos", "data-ingestion", "pos", "toast", "browser-automation", "franzy"],
+    estimatedMinutes: 40,
+    createdAt: "2025-02-26",
+  },
+  {
+    id: "franzy-os-copilot",
+    title: "Building the FranzyOS AI Copilot",
+    summary:
+      "Architecture and implementation of FranzyOS's natural language copilot — evidence-first answers, role-based insights, and proactive recommendations for franchise operators.",
+    content: `## FranzyOS AI Copilot Architecture
+
+FranzyOS's core feature: operators ask questions in natural language, get answers backed by their actual data.
+
+### Design Principles
+1. **Evidence-first** — Every claim tied to a data source. Operators trust data they can verify.
+2. **Role-based** — Owners see portfolio-level insights. Area managers see location comparisons. Store leaders see daily priorities.
+3. **Proactive** — Surface top 3 priorities daily, don't wait for questions.
+4. **Actionable** — Don't just report problems, suggest specific actions.
+
+### Architecture
+\`\`\`
+Operator Question (natural language)
+    ↓
+Claude API (with tools)
+    ├─ ClickHouse queries (analytics, benchmarking)
+    ├─ PostgreSQL queries (location data, org structure)
+    └─ S3 documents (FDDs, training materials)
+    ↓
+Evidence-backed response with citations
+\`\`\`
+
+### Example Interactions
+\`\`\`
+Operator: "Why did our Charlotte Marco's location underperform last week?"
+
+AI Copilot: "Charlotte Marco's (Unit #247) had $18,200 in net sales
+last week, 22% below its 8-week average of $23,400.
+
+Key factors:
+1. Labor cost was 38% of sales (vs target of 30%) — overtime hours
+   were 2.3x the location average [Source: Toast labor report]
+2. Ticket count dropped 15% vs prior week, likely weather-related
+   (Charlotte had 3 rain days) [Source: Toast daily sales]
+3. Comp/void rate was 4.2% (vs 1.8% average) — investigate
+   [Source: Toast comp report]
+
+Recommended actions:
+- Review overtime scheduling with store manager
+- Audit comp/void reasons for the week
+- Compare with other Charlotte-area locations"
+\`\`\`
+
+### Role-Based Dashboards
+\`\`\`typescript
+// Different tools/prompts per role
+const roleConfigs = {
+  owner: {
+    system: "You are a franchise profitability advisor for a multi-unit operator...",
+    tools: [portfolioOverview, locationBenchmark, profitabilityTrend],
+    dailyPrompt: "Top 3 priorities across all locations this week"
+  },
+  areaManager: {
+    system: "You advise an area manager overseeing 8-15 franchise locations...",
+    tools: [locationComparison, laborAnalysis, salesTrend],
+    dailyPrompt: "Which locations need attention today and why"
+  },
+  storeLeader: {
+    system: "You help a franchise store leader optimize daily operations...",
+    tools: [dailySales, laborSchedule, customerFeedback],
+    dailyPrompt: "Today's focus areas based on yesterday's performance"
+  }
+};
+\`\`\`
+
+### Coaching Cards
+Turn insights into action:
+1. Identify the issue (data-backed)
+2. Explain the impact ($$)
+3. Suggest specific corrective action
+4. Assign to the right role
+5. Track completion`,
+    toolName: "Claude API",
+    category: "coding",
+    difficulty: "advanced",
+    tags: ["franzyos", "copilot", "ai", "operators", "franzy"],
+    estimatedMinutes: 45,
+    createdAt: "2025-02-26",
+  },
+
   // ─── AI Connectors ───
   {
     id: "ai-connectors",

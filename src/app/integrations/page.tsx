@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Check,
   Plus,
   RefreshCw,
   MessageSquare,
-  Mail,
   BarChart3,
   GitBranch,
-  ArrowUpRight,
+  Database,
+  Search,
+  FlaskConical,
+  Utensils,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -25,23 +27,59 @@ interface IntegrationItem {
   signalCount?: number;
 }
 
+const STORAGE_KEY = "claude-hub:integrations";
+
+const defaultIntegrations: IntegrationItem[] = [
+  { id: "hubspot", name: "HubSpot", description: "Two-way CRM sync — pipeline management, call ratings, automated follow-up workflows for franchise leads", icon: BarChart3, color: "text-accent-sand bg-accent-sand/10", connected: true, lastSync: "5 min ago", signalCount: 34 },
+  { id: "slack", name: "Slack", description: "Monitor team conversations for tool questions, franchise deal discussions, and automation opportunities", icon: MessageSquare, color: "text-accent-lavender bg-accent-lavender/10", connected: true, lastSync: "2 min ago", signalCount: 18 },
+  { id: "toast", name: "Toast POS", description: "Pull daily sales, labor, comps/voids data from Toast for FranzyOS pilot locations (MPZ Hot, Onyx Brands)", icon: Utensils, color: "text-accent-coral bg-accent-coral/10", connected: true, lastSync: "1 hr ago", signalCount: 62 },
+  { id: "typesense", name: "Typesense", description: "Franchise search index — powers the Franzy Core search, Fit Score matching, and brand discovery", icon: Search, color: "text-accent-sage bg-accent-sage/10", connected: true, lastSync: "30 min ago", signalCount: 0 },
+  { id: "github", name: "GitHub", description: "Monorepo PR activity, code reviews, and Claude Code @claude mentions for Core + FranzyOS", icon: GitBranch, color: "text-ink-muted bg-surface-3", connected: false },
+  { id: "clickhouse", name: "ClickHouse", description: "FranzyOS analytics database — location benchmarking, operator performance metrics, trend analysis", icon: Database, color: "text-accent-lavender bg-accent-lavender/10", connected: false },
+  { id: "growthbook", name: "GrowthBook", description: "Feature flags and A/B experiments — Fit Score v2, Connection Wizard, UI tests on franzy.com", icon: FlaskConical, color: "text-accent-sage bg-accent-sage/10", connected: false },
+];
+
+function loadIntegrations(): IntegrationItem[] {
+  if (typeof window === "undefined") return defaultIntegrations;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultIntegrations;
+    const saved = JSON.parse(raw) as Record<string, { connected: boolean; lastSync?: string; signalCount?: number }>;
+    return defaultIntegrations.map((int) => {
+      const s = saved[int.id];
+      if (s) return { ...int, connected: s.connected, lastSync: s.lastSync, signalCount: s.signalCount };
+      return int;
+    });
+  } catch {
+    return defaultIntegrations;
+  }
+}
+
+function saveIntegrations(integrations: IntegrationItem[]) {
+  const data: Record<string, { connected: boolean; lastSync?: string; signalCount?: number }> = {};
+  for (const int of integrations) {
+    data[int.id] = { connected: int.connected, lastSync: int.lastSync, signalCount: int.signalCount };
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
 export default function IntegrationsPage() {
-  const [integrations, setIntegrations] = useState<IntegrationItem[]>([
-    { id: "slack", name: "Slack", description: "Monitor conversations for tool questions and automation opportunities", icon: MessageSquare, color: "text-accent-lavender bg-accent-lavender/10", connected: true, lastSync: "2 min ago", signalCount: 24 },
-    { id: "email", name: "Gmail", description: "Detect repetitive email tasks and follow-up patterns", icon: Mail, color: "text-accent-sage bg-accent-sage/10", connected: true, lastSync: "15 min ago", signalCount: 12 },
-    { id: "hubspot", name: "HubSpot", description: "Track deal activity and identify CRM automation opportunities", icon: BarChart3, color: "text-accent-sand bg-accent-sand/10", connected: false },
-    { id: "linear", name: "Linear", description: "Analyze issue patterns and optimize project management", icon: ArrowUpRight, color: "text-accent-coral bg-accent-coral/10", connected: true, lastSync: "1 hr ago", signalCount: 8 },
-    { id: "github", name: "GitHub", description: "Monitor PR activity, review patterns, and dev workflows", icon: GitBranch, color: "text-ink-muted bg-surface-3", connected: false },
-  ]);
+  const [integrations, setIntegrations] = useState<IntegrationItem[]>(defaultIntegrations);
+
+  useEffect(() => {
+    setIntegrations(loadIntegrations());
+  }, []);
 
   function toggleConnection(id: string) {
-    setIntegrations((prev) =>
-      prev.map((int) =>
+    setIntegrations((prev) => {
+      const next = prev.map((int) =>
         int.id === id
           ? { ...int, connected: !int.connected, lastSync: !int.connected ? "Just now" : undefined, signalCount: !int.connected ? 0 : undefined }
           : int
-      )
-    );
+      );
+      saveIntegrations(next);
+      return next;
+    });
   }
 
   const connectedCount = integrations.filter((i) => i.connected).length;
@@ -53,10 +91,10 @@ export default function IntegrationsPage() {
           Integrations
         </p>
         <h1 className="text-3xl md:text-4xl font-display font-bold text-ink tracking-tight">
-          Connect your tools
+          Franzy tool connections
         </h1>
         <p className="text-ink-muted mt-2">
-          More connections mean better personalized recommendations
+          Connect your tools for better recommendations and automation
         </p>
       </div>
 
@@ -115,7 +153,7 @@ export default function IntegrationsPage() {
                       <RefreshCw className="w-3 h-3" />
                       {integration.lastSync}
                     </span>
-                    {integration.signalCount !== undefined && (
+                    {integration.signalCount !== undefined && integration.signalCount > 0 && (
                       <span>{integration.signalCount} signals</span>
                     )}
                   </div>

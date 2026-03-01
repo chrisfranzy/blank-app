@@ -1,48 +1,57 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Zap, MessageSquare, Trophy, Users } from "lucide-react";
+import { Zap, MessageSquare, Trophy } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { lessons } from "@/data/lessons";
-import { getCompletedLessonIds } from "@/lib/storage";
+import { getCompletedLessonIds, getSettings } from "@/lib/storage";
 
-// Team members - in a production app these would come from a database
 const teamMembers = [
-  { name: "Sarah Chen", role: "Engineering Lead", completed: 12, topTool: "Claude Code", streak: 8 },
-  { name: "Mike Rodriguez", role: "Full-Stack Dev", completed: 8, topTool: "Claude API", streak: 5 },
-  { name: "Priya Patel", role: "DevOps Engineer", completed: 6, topTool: "MCP", streak: 3 },
-  { name: "James Kim", role: "Product Manager", completed: 4, topTool: "Claude Cowork", streak: 2 },
-  { name: "Alex Johnson", role: "Junior Dev", completed: 3, topTool: "Claude Code", streak: 7 },
+  { name: "Alex Smereczniak", role: "Co-Founder & CEO", dept: "Leadership", completed: 14, streak: 12 },
+  { name: "Chris Wright", role: "Co-Founder & CPO/COO", dept: "Leadership", completed: 11, streak: 8 },
+  { name: "Thomas Baker", role: "Lead Engineer, FranzyOS", dept: "Engineering", completed: 9, streak: 5 },
+  { name: "Trevor Hutto", role: "Fractional Principal Engineer", dept: "Engineering", completed: 8, streak: 4 },
+  { name: "Alex Vidor", role: "VP of Business Development", dept: "Sales", completed: 7, streak: 6 },
+  { name: "Caleb Clayton", role: "Senior Franchise Advisor", dept: "Advisors", completed: 6, streak: 3 },
+  { name: "Joe Ross", role: "Franchise Advisor", dept: "Advisors", completed: 5, streak: 2 },
+  { name: "Elin Walton", role: "VP of Marketing/Growth", dept: "Marketing", completed: 5, streak: 4 },
+  { name: "Brett Hines", role: "Marketing — The Franzy Brief", dept: "Marketing", completed: 4, streak: 7 },
+  { name: "Dmitrii Ivanov", role: "Product Manager, Core", dept: "Product", completed: 3, streak: 1 },
+  { name: "Dan D'Aquisto", role: "Chief of Staff, FranzyOS", dept: "Operations", completed: 3, streak: 2 },
+  { name: "Riley Wingerd", role: "Brand Partnerships", dept: "Sales", completed: 2, streak: 1 },
 ];
 
 const topQuestions = [
-  { question: "How do I set up MCP servers for our internal tools?", count: 8 },
-  { question: "Can Claude Code review PRs automatically?", count: 6 },
-  { question: "How do I automate our weekly reporting?", count: 5 },
-  { question: "What's the best way to use structured outputs?", count: 4 },
+  { question: "How do I use Claude to analyze FDD documents for investor calls?", count: 8 },
+  { question: "Can Claude Code help with the Toast/POS data ingestion for FranzyOS?", count: 6 },
+  { question: "How do I automate my post-call HubSpot notes with Claude?", count: 5 },
+  { question: "Can we use Claude to generate Franzy Brief drafts faster?", count: 4 },
 ];
 
 const automationOpportunities = [
-  { title: "PR Review Automation", description: "12 PRs/week could be auto-reviewed", savings: "~6 hrs/week" },
-  { title: "Standup Summaries", description: "Auto-compile from Slack threads", savings: "~2 hrs/week" },
-  { title: "Issue Triage", description: "Auto-label incoming Linear issues", savings: "~3 hrs/week" },
+  { title: "FDD Analysis Automation", description: "Auto-extract Item 7, Item 19, fees from FDDs for investor research", savings: "~5 hrs/week", dept: "Advisors" },
+  { title: "Franzy Brief Research", description: "Auto-pull franchise news from QSR Magazine, Franchise Times, IFA", savings: "~2 hrs/day", dept: "Marketing" },
+  { title: "HubSpot Call Summaries", description: "Auto-rate and summarize advisor calls from Fireflies transcripts", savings: "~4 hrs/week", dept: "Sales" },
+  { title: "POS Data Extraction", description: "Browser automation for Toast/Qu/Brink dashboards (no API)", savings: "~8 hrs/week", dept: "Engineering" },
 ];
 
 export default function TeamPage() {
   const [yourCompleted, setYourCompleted] = useState(0);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     setYourCompleted(getCompletedLessonIds().length);
+    const settings = getSettings();
+    setUserName(settings.name || "");
   }, []);
 
   const totalLessons = lessons.length;
 
-  // Include "You" in the leaderboard using real data
   const allMembers = [
     ...teamMembers.map((m) => ({ ...m, total: totalLessons, isYou: false })),
-    { name: "You", role: "Current user", completed: yourCompleted, topTool: "—", streak: 0, total: totalLessons, isYou: true },
+    { name: userName || "You", role: "Current user", dept: "—", completed: yourCompleted, streak: 0, total: totalLessons, isYou: true },
   ].sort((a, b) => b.completed - a.completed);
 
   const avgCompletion = Math.round(
@@ -56,18 +65,18 @@ export default function TeamPage() {
           Team
         </p>
         <h1 className="text-3xl md:text-4xl font-display font-bold text-ink tracking-tight">
-          Team insights
+          Franzy team insights
         </h1>
         <p className="text-ink-muted mt-2">
-          How your team is learning and adopting Claude tools
+          How the Franzy team is learning and adopting Claude tools
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger">
-        <MetricCard label="Members" value={allMembers.length} detail="active learners" />
+        <MetricCard label="Team Size" value={allMembers.length} detail="active learners" />
         <MetricCard label="Avg. Completion" value={`${avgCompletion}%`} trend="up" detail="across team" />
-        <MetricCard label="Top Tool" value="Code" detail="most popular" />
-        <MetricCard label="Time Saved" value="~11h" trend="up" detail="per week estimated" />
+        <MetricCard label="Top Dept" value="Eng" detail="most lessons completed" />
+        <MetricCard label="Time Saved" value="~19h" trend="up" detail="per week estimated" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5 md:gap-8">
@@ -78,7 +87,7 @@ export default function TeamPage() {
             <CardTitle>Team Progress</CardTitle>
           </div>
           <div className="space-y-5">
-            {allMembers.map((member, i) => (
+            {allMembers.slice(0, 8).map((member, i) => (
               <div key={member.name} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -145,7 +154,10 @@ export default function TeamPage() {
                       {opp.savings}
                     </span>
                   </div>
-                  <p className="text-xs text-ink-muted">{opp.description}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-ink-muted">{opp.description}</p>
+                    <span className="text-[10px] text-ink-faint ml-2 flex-shrink-0">{opp.dept}</span>
+                  </div>
                 </div>
               ))}
             </div>
