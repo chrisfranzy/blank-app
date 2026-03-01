@@ -1431,212 +1431,432 @@ app.message(/customer request/i, async ({ message }) => {
     skilljarCourse: "Building with the Claude API",
   },
 
-  // ─── Franzy Team: Integration Recipes ───
+  // ─── Franzy-Specific: Franchise Matching Platform ───
   {
-    id: "email-automation",
-    title: "Email Automation with Claude",
+    id: "franzy-fit-score-claude",
+    title: "Improving Franzy Fit Score with Claude",
     summary:
-      "Automate email drafting, classification, and response generation using Claude's language understanding.",
-    content: `## Email Automation
+      "Use Claude to enhance franchise-investor matching — better scoring, explainable recommendations, and natural language queries against your franchise database.",
+    content: `## Enhancing Franzy Fit Score with Claude
 
-Use Claude to handle the repetitive parts of email — drafting, sorting, summarizing, and responding.
+The Franzy Fit Score already uses AI to match investors with franchises. Here's how to augment it with Claude for deeper, more explainable matching.
 
-### Email Classification
+### Explainable Match Reasons
+Instead of just a score, give investors a narrative:
 \`\`\`typescript
-const classifyEmail = async (email: string) => {
+const explainMatch = async (investor: InvestorProfile, franchise: Franchise) => {
+  const response = await claude.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1024,
+    system: \`You are a franchise advisor. Given an investor profile and
+    franchise details, explain why this is a good (or poor) match.
+    Be specific about financial fit, lifestyle alignment, and market factors.\`,
+    messages: [{
+      role: "user",
+      content: \`Investor: \${JSON.stringify(investor)}
+Franchise: \${JSON.stringify(franchise)}
+Fit Score: \${investor.fitScore}
+
+Explain this match in 3-4 sentences that help the investor decide.\`
+    }]
+  });
+  return response.content[0].text;
+};
+\`\`\`
+
+### Natural Language Franchise Search
+Let investors search with questions instead of filters:
+\`\`\`typescript
+// "I have $150K, want a food franchise in Texas, semi-absentee"
+const tools = [{
+  name: "search_franchises",
+  description: "Search the Franzy franchise database",
+  input_schema: {
+    type: "object",
+    properties: {
+      investmentRange: { type: "object", properties: {
+        min: { type: "number" }, max: { type: "number" }
+      }},
+      categories: { type: "array", items: { type: "string" } },
+      states: { type: "array", items: { type: "string" } },
+      ownershipType: { enum: ["owner-operator", "semi-absentee", "absentee"] }
+    }
+  }
+}];
+\`\`\`
+
+### FDD Document Analysis
+Use Claude to summarize Franchise Disclosure Documents:
+- Extract key financial metrics (Item 19, Item 7)
+- Compare terms across similar franchises
+- Flag unusual clauses or restrictions
+- Generate investor-friendly summaries
+
+### Franzy-Specific Applications
+1. **Match explanation** — Why this franchise fits this investor
+2. **Franchise comparison** — Side-by-side analysis for investors
+3. **Market analysis** — Territory opportunity assessment
+4. **Risk assessment** — Financial viability scoring`,
+    toolName: "Claude API",
+    category: "automation",
+    difficulty: "intermediate",
+    tags: ["fit-score", "matching", "franchise", "franzy"],
+    estimatedMinutes: 30,
+    createdAt: "2025-02-08",
+  },
+  {
+    id: "franzy-investor-comms",
+    title: "Automating Investor Communications",
+    summary:
+      "Use Claude to draft personalized investor emails, classify inbound inquiries, and automate follow-up sequences for franchise leads.",
+    content: `## Investor Communication Automation
+
+Franzy handles thousands of investor inquiries. Claude can help personalize and automate communication without losing the human touch.
+
+### Classify Incoming Investor Inquiries
+\`\`\`typescript
+const classifyInquiry = async (message: string) => {
   const response = await claude.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 256,
     tools: [{
-      name: "classify",
-      description: "Classify an email",
+      name: "classify_inquiry",
+      description: "Classify a franchise investor inquiry",
       input_schema: {
         type: "object",
         properties: {
-          category: { enum: ["urgent", "action-needed", "fyi", "spam"] },
-          priority: { enum: ["high", "medium", "low"] },
+          stage: { enum: ["browsing", "researching", "ready-to-invest", "returning"] },
+          intent: { enum: ["general-info", "specific-brand", "financing", "territory", "support"] },
+          investmentLevel: { enum: ["under-50k", "50k-150k", "150k-500k", "500k-plus", "unknown"] },
+          urgency: { enum: ["high", "medium", "low"] },
           suggestedAction: { type: "string" }
         },
-        required: ["category", "priority", "suggestedAction"]
+        required: ["stage", "intent", "urgency", "suggestedAction"]
       }
     }],
-    tool_choice: { type: "tool", name: "classify" },
-    messages: [{ role: "user", content: email }]
+    tool_choice: { type: "tool", name: "classify_inquiry" },
+    messages: [{ role: "user", content: message }]
   });
   return response.content[0].input;
 };
 \`\`\`
 
-### Auto-Draft Responses
-- Pull context from CRM (via MCP)
-- Match tone to previous emails
-- Flag for human review before sending
+### Personalized Follow-Up Drafts
+\`\`\`
+"Draft a follow-up email for an investor who:
+- Viewed 5 QSR franchises in the $100-200K range
+- Completed their Fit Score profile but hasn't requested info
+- Located in Austin, TX
+- Previously worked in restaurant management"
+\`\`\`
 
-### Workflow
-1. Email arrives → classify priority
-2. High priority → draft response, notify team
-3. Action needed → create task in Linear
-4. FYI → summarize and archive`,
+### Communication Workflows
+1. **New lead** → Classify intent & investment level → Route to right sequence
+2. **Stale lead (7 days)** → Claude drafts re-engagement email with new matches
+3. **Post-call** → Auto-summarize call notes, draft next steps
+4. **Franchisor intro** → Personalized introduction email with Fit Score context
+
+### Best Practices
+- Always flag AI-drafted emails for human review before sending
+- Include Fit Score context in every franchisor introduction
+- Personalize based on investor's browsing behavior on franzy.com`,
     toolName: "Claude API",
     category: "communication",
     difficulty: "intermediate",
-    tags: ["email", "automation", "classification", "franzy"],
+    tags: ["email", "investors", "leads", "communication", "franzy"],
     estimatedMinutes: 25,
-    createdAt: "2025-02-08",
+    createdAt: "2025-02-10",
   },
   {
-    id: "hubspot-integration",
-    title: "HubSpot CRM Automation with Claude",
+    id: "franzy-franchise-data-mcp",
+    title: "MCP Server for Franzy's Franchise Database",
     summary:
-      "Automate deal tracking, contact enrichment, and CRM workflows using Claude + HubSpot integration.",
-    content: `## HubSpot + Claude
+      "Build a custom MCP server to let Claude query your franchise database, search Typesense, and access investor profiles directly.",
+    content: `## MCP Server for Franzy Data
 
-Supercharge your CRM with AI-powered automation.
+Give Claude direct access to Franzy's franchise database and Typesense search index through a custom MCP server.
 
-### What You Can Automate
-- **Deal summaries** — Auto-generate deal status updates
-- **Contact enrichment** — Research and fill in missing contact info
-- **Follow-up drafting** — Generate personalized follow-ups
-- **Pipeline analysis** — Identify at-risk deals
-
-### MCP Server for HubSpot
-\`\`\`json
-{
-  "mcpServers": {
-    "hubspot": {
-      "command": "npx",
-      "args": ["-y", "mcp-server-hubspot"],
-      "env": {
-        "HUBSPOT_API_KEY": "your-key"
-      }
-    }
-  }
-}
+### Architecture
+\`\`\`
+Claude Code / Claude API
+    ↓
+MCP Client
+    ↓
+Franzy MCP Server
+    ├─ Typesense (franchise search)
+    ├─ PostgreSQL (investor profiles, matches)
+    └─ Franzy API (Fit Score, Connect Tool)
 \`\`\`
 
-### Example: Auto Deal Summary
-\`\`\`
-Claude, summarize the current status of the Acme Corp deal:
-- Recent activities
-- Next steps
-- Risk factors
-- Suggested actions
+### Python MCP Server
+\`\`\`python
+from mcp.server.fastmcp import FastMCP
+import typesense
+
+mcp = FastMCP("franzy-data")
+
+# Initialize Typesense client
+ts_client = typesense.Client({
+    "api_key": os.environ["TYPESENSE_API_KEY"],
+    "nodes": [{"host": "search.franzy.com", "port": 443, "protocol": "https"}]
+})
+
+@mcp.tool()
+def search_franchises(
+    query: str,
+    min_investment: int = 0,
+    max_investment: int = 1000000,
+    categories: list[str] | None = None
+) -> str:
+    """Search Franzy's franchise database with filters."""
+    filter_by = f"min_investment:<={max_investment} && max_investment:>={min_investment}"
+    if categories:
+        filter_by += f" && category:={categories}"
+
+    results = ts_client.collections["franchises"].documents.search({
+        "q": query,
+        "query_by": "name,description,category",
+        "filter_by": filter_by,
+        "sort_by": "fit_score:desc"
+    })
+    return json.dumps(results["hits"][:10])
+
+@mcp.tool()
+def get_investor_profile(investor_id: str) -> str:
+    """Get an investor's profile and match history."""
+    profile = db.query("SELECT * FROM investors WHERE id = %s", investor_id)
+    matches = db.query("SELECT * FROM matches WHERE investor_id = %s ORDER BY score DESC", investor_id)
+    return json.dumps({"profile": profile, "recent_matches": matches[:5]})
+
+@mcp.resource("franchise://{franchise_id}")
+def get_franchise_details(franchise_id: str) -> str:
+    """Get detailed franchise information including FDD highlights."""
+    return json.dumps(db.query("SELECT * FROM franchises WHERE id = %s", franchise_id))
+
+mcp.run()
 \`\`\`
 
-### Pipeline Automation
-1. New deal created → Claude researches company
-2. Deal stage change → draft appropriate follow-up
-3. Deal stale > 14 days → alert with suggestions
-4. Deal won → generate onboarding plan`,
-    toolName: "Claude API",
-    category: "automation",
-    difficulty: "intermediate",
-    tags: ["hubspot", "crm", "sales", "automation", "franzy"],
-    estimatedMinutes: 25,
+### Use Cases in Claude Code
+\`\`\`bash
+claude "Search for food franchises under $200K in Texas"
+claude "Pull the investor profile for ID 12345 and suggest new matches"
+claude "Compare the FDD terms of McDonald's vs Chick-fil-A"
+\`\`\`
+
+### Integration with GrowthBook
+Use the MCP server to also query GrowthBook experiment results:
+- Which matching algorithms perform better?
+- A/B test results on email templates
+- Conversion funnel analysis`,
+    toolName: "MCP",
+    category: "coding",
+    difficulty: "advanced",
+    tags: ["mcp", "typesense", "database", "franchise-data", "franzy"],
+    estimatedMinutes: 35,
     createdAt: "2025-02-12",
   },
   {
-    id: "linear-management",
-    title: "Linear Issue Management with Claude",
+    id: "franzy-codebase-claude-code",
+    title: "Using Claude Code with Franzy's Next.js Codebase",
     summary:
-      "Automate issue triage, sprint planning, and project management in Linear using Claude.",
-    content: `## Linear + Claude
+      "Set up Claude Code for Franzy's Next.js/React app — CLAUDE.md config, search component debugging, Typesense integration, and GrowthBook feature flags.",
+    content: `## Claude Code for Franzy's Stack
 
-Streamline your project management with AI-powered issue handling.
+Franzy runs on Next.js/React with Typesense search and GrowthBook feature flags. Here's how to configure Claude Code for maximum effectiveness.
 
-### Automated Issue Triage
-\`\`\`typescript
-const triageIssue = async (issue: LinearIssue) => {
-  const response = await claude.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 512,
-    tools: [{
-      name: "triage",
-      description: "Triage a Linear issue",
-      input_schema: {
-        type: "object",
-        properties: {
-          priority: { enum: ["urgent", "high", "medium", "low"] },
-          labels: { type: "array", items: { type: "string" } },
-          estimatePoints: { type: "number" },
-          assignTeam: { type: "string" },
-          suggestedAssignee: { type: "string" }
-        }
-      }
-    }],
-    tool_choice: { type: "tool", name: "triage" },
-    messages: [{
-      role: "user",
-      content: \\\`Triage: \\\${issue.title}\\n\\\${issue.description}\\\`
-    }]
-  });
-};
+### CLAUDE.md for Franzy
+\`\`\`markdown
+# Franzy — Franchise Matching Platform
+
+## Stack
+- Next.js 14 (App Router)
+- TypeScript (strict)
+- Tailwind CSS
+- Typesense (franchise search)
+- GrowthBook (feature flags & experiments)
+- Referral Rock (referral tracking)
+
+## Architecture
+- src/app/ — Pages (franchise browse, investor dashboard, matching)
+- src/components/ — Shared UI (FranchiseCard, FitScoreBadge, SearchFilters)
+- src/lib/ — Typesense client, GrowthBook config, API helpers
+- src/hooks/ — Custom hooks (useSearch, useFitScore, useInvestorProfile)
+
+## Key Patterns
+- Server components by default, client only for interactive search/filters
+- Typesense for all franchise search (NOT database queries)
+- GrowthBook feature flags wrap all new features
+- Fit Score calculations happen server-side
+
+## Commands
+- npm run dev — Start dev server
+- npm test — Run test suite
+- npm run build — Production build
+- npm run search:reindex — Reindex Typesense
 \`\`\`
 
-### Sprint Planning
-- Auto-estimate story points based on description
-- Suggest sprint assignments based on team capacity
-- Identify blockers and dependencies
+### Common Tasks
+\`\`\`bash
+# Debug search results
+claude "The franchise search isn't returning results for 'pizza'.
+Check the Typesense query in useSearch and the index schema."
 
-### Bug Report Enhancement
-- Auto-add reproduction steps
-- Link related issues
-- Suggest fix approaches based on codebase context`,
-    toolName: "Claude API",
-    category: "workflow",
+# Add a new filter
+claude "Add a 'semi-absentee' filter to the franchise search page.
+Follow the pattern of the existing category filter."
+
+# GrowthBook experiment
+claude "Wrap the new Fit Score explanation component in a
+GrowthBook feature flag called 'fit-score-v2-explanation'"
+\`\`\`
+
+### Tips for Franzy's Codebase
+1. Always check GrowthBook before shipping new UI
+2. Test search changes against the Typesense staging index
+3. Fit Score changes need both frontend and API updates
+4. Run \`npm run search:reindex\` after schema changes`,
+    toolName: "Claude Code",
+    category: "coding",
     difficulty: "intermediate",
-    tags: ["linear", "project-management", "automation", "franzy"],
-    estimatedMinutes: 25,
+    tags: ["nextjs", "typesense", "growthbook", "codebase", "franzy"],
+    estimatedMinutes: 20,
     createdAt: "2025-02-15",
   },
   {
-    id: "cowork-getting-started",
-    title: "Getting Started with Claude Cowork",
+    id: "franzy-analytics-cowork",
+    title: "Automating Franzy Analytics with Cowork",
     summary:
-      "Learn to use Claude Cowork for GUI automation, scheduled tasks, and visual workflows.",
-    content: `## Claude Cowork
+      "Use Claude Cowork to automate weekly franchise matching reports, investor funnel analysis, and franchisor performance dashboards.",
+    content: `## Franzy Analytics Automation
 
-Cowork is Claude's GUI automation tool — it can see your screen, click buttons, fill forms, and complete visual tasks.
+Claude Cowork can automate the reports and dashboard checks your team does manually every week.
 
-### What Cowork Does
-- **GUI Automation** — Interact with any application visually
-- **Scheduled Tasks** — Run workflows on a schedule
-- **VM Execution** — Safe, sandboxed environment
-- **Plugin Marketplace** — Pre-built automation recipes
+### What to Automate
+- **Weekly matching report** — How many investors matched, conversion rates, top franchises
+- **Funnel analysis** — Where investors drop off (browse → match → connect → invest)
+- **Franchisor performance** — Which brands are converting leads vs sitting idle
+- **Referral Rock metrics** — Referral program performance
 
-### Use Cases
-1. **Data entry** — Fill forms across multiple apps
-2. **Report generation** — Navigate dashboards, export data
-3. **Testing** — Visual regression testing
-4. **Monitoring** — Check dashboards on schedule
-
-### Setting Up a Task
-1. Describe what you want done in natural language
-2. Cowork plans the steps
-3. Review and approve the plan
-4. Cowork executes (you can watch live)
-5. Results are saved and reported
-
-### Example
+### Weekly Matching Report
 \`\`\`
-"Every Monday at 9am:
-1. Open our analytics dashboard
-2. Screenshot the weekly metrics
-3. Export the CSV data
-4. Post the screenshot and summary to #metrics in Slack"
+"Every Monday at 8am:
+1. Open the Franzy analytics dashboard
+2. Filter to last 7 days
+3. Screenshot the matching funnel chart
+4. Export investor-franchise match data as CSV
+5. Summarize: total matches, conversion rate, top 5 franchises
+6. Post summary + screenshot to #analytics in Slack"
+\`\`\`
+
+### Investor Funnel Monitoring
+\`\`\`
+"Every day at 9am:
+1. Check the investor signup funnel in our analytics
+2. If conversion from 'profile complete' to 'match viewed' drops below 40%, alert #product in Slack
+3. Include the current rate and last 7-day trend"
+\`\`\`
+
+### GrowthBook Experiment Results
+\`\`\`
+"Every Friday at 4pm:
+1. Open GrowthBook dashboard
+2. Check all running experiments
+3. For any experiment with >95% significance, summarize the winner
+4. Post results to #experiments in Slack"
 \`\`\`
 
 ### Tips
-- Start with simple, repeatable tasks
-- Review Cowork's plan before execution
-- Use schedules for regular workflows
-- Combine with MCP for data access`,
+- Start with the weekly report — highest ROI
+- Use screenshots for visual dashboards that don't have CSV export
+- Set up alerts for metric drops, not just reports
+- Combine with MCP for richer data analysis`,
     toolName: "Claude Cowork",
     category: "automation",
     difficulty: "beginner",
-    tags: ["cowork", "gui", "automation", "scheduled", "franzy"],
+    tags: ["analytics", "reporting", "cowork", "dashboards", "franzy"],
     estimatedMinutes: 20,
     createdAt: "2025-02-22",
+  },
+  {
+    id: "franzy-fdd-analysis",
+    title: "FDD Document Analysis with Claude",
+    summary:
+      "Use Claude to parse, summarize, and compare Franchise Disclosure Documents — extracting key financials, fees, and territory terms for investors.",
+    content: `## FDD Analysis with Claude
+
+Franchise Disclosure Documents are 200+ page legal documents. Claude can extract the information investors actually need.
+
+### Key FDD Items to Extract
+- **Item 5** — Initial fees
+- **Item 6** — Other fees (royalties, marketing, technology)
+- **Item 7** — Estimated initial investment range
+- **Item 19** — Financial performance representations
+- **Item 12** — Territory rights and exclusivity
+
+### Structured Extraction
+\`\`\`typescript
+const analyzeFDD = async (fddText: string) => {
+  const response = await claude.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4096,
+    tools: [{
+      name: "extract_fdd",
+      description: "Extract key information from a Franchise Disclosure Document",
+      input_schema: {
+        type: "object",
+        properties: {
+          brandName: { type: "string" },
+          initialFee: { type: "string" },
+          totalInvestmentMin: { type: "number" },
+          totalInvestmentMax: { type: "number" },
+          royaltyRate: { type: "string" },
+          marketingFee: { type: "string" },
+          termLength: { type: "string" },
+          renewalTerms: { type: "string" },
+          territoryType: { enum: ["exclusive", "protected", "none"] },
+          averageRevenue: { type: "string" },
+          unitCount: { type: "number" },
+          keyRisks: { type: "array", items: { type: "string" } },
+          summary: { type: "string" }
+        }
+      }
+    }],
+    tool_choice: { type: "tool", name: "extract_fdd" },
+    messages: [{ role: "user", content: \`Analyze this FDD:\\n\${fddText}\` }]
+  });
+  return response.content[0].input;
+};
+\`\`\`
+
+### Franchise Comparison
+\`\`\`
+"Compare these two franchise FDDs:
+- Investment range
+- Ongoing fees (royalty + marketing)
+- Territory protection
+- Average unit revenue
+- Growth trajectory (unit count over 3 years)
+Present as a side-by-side table."
+\`\`\`
+
+### Investor-Friendly Summaries
+Turn 200-page FDDs into 1-page summaries:
+1. **The Basics** — What is this franchise, what does it cost
+2. **The Money** — What do operators typically earn
+3. **The Commitment** — Term length, territory, restrictions
+4. **The Risks** — Key things to watch out for
+
+### Feeding into Fit Score
+FDD analysis can enhance the Franzy Fit Score:
+- Compare investor's budget to Item 7 investment range
+- Match investor's desired involvement to operating requirements
+- Flag territory conflicts with investor's preferred location`,
+    toolName: "Claude API",
+    category: "automation",
+    difficulty: "advanced",
+    tags: ["fdd", "documents", "analysis", "franchise", "franzy"],
+    estimatedMinutes: 30,
+    createdAt: "2025-02-25",
   },
 
   // ─── AI Connectors ───
