@@ -2404,6 +2404,776 @@ const dailyInsights = async (userId: string) => {
     createdAt: "2025-02-26",
   },
 
+  // ─── Non-Developer AI Tools ───
+  {
+    id: "claude-chat-projects",
+    title: "Claude Projects: Persistent Context for Teams",
+    summary:
+      "Use Claude Projects to keep team knowledge, brand guidelines, and reference docs always available — no re-uploading, no lost context.",
+    content: `## Claude Projects
+
+Projects let you give Claude persistent context that stays across every conversation. Instead of re-explaining your business every time, Claude just *knows*.
+
+### What Is a Project?
+A Project is a shared workspace on Claude.ai where you can:
+- Upload reference documents (PDFs, docs, spreadsheets)
+- Set custom instructions that apply to every conversation
+- Share the project with your team
+- Keep all related conversations in one place
+
+### Setting Up a Project
+1. Go to Claude.ai → Projects → "New Project"
+2. Add a **Project Name** (e.g., "Q1 Marketing Campaign")
+3. Add **Custom Instructions**:
+\`\`\`
+You are helping the Franzy marketing team with Q1 campaign content.
+
+Our brand voice is: conversational, knowledgeable, slightly irreverent.
+Our audience is: franchise investors, 35-55, $100K+ liquid capital.
+Our key messages this quarter:
+1. Franchise ownership as a path to financial freedom
+2. Franzy's AI-powered matching finds the right fit
+3. Semi-absentee ownership is viable with the right brand
+\`\`\`
+4. Upload reference docs (brand guide, past campaigns, competitor analysis)
+5. Start chatting — Claude has all the context
+
+### Team Use Cases
+- **Marketing**: Upload brand guide + past campaigns → consistent content
+- **Sales**: Upload product docs + pricing → accurate prospect answers
+- **Operations**: Upload SOPs + policies → instant team Q&A
+- **Leadership**: Upload reports + strategy docs → analysis on demand
+
+### Best Practices
+1. **Keep instructions under 1 page** — focus on what Claude needs most
+2. **Upload real examples** — show Claude what good output looks like
+3. **Update docs quarterly** — stale context gives stale answers
+4. **Share with your team** — everyone benefits from the same context
+5. **Use separate projects** for separate workstreams`,
+    toolName: "Claude",
+    category: "best-practices",
+    difficulty: "beginner",
+    tags: ["projects", "context", "teams", "no-code", "non-developer"],
+    estimatedMinutes: 15,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "claude-chat-artifacts",
+    title: "Claude Artifacts: Documents, Code & Visualizations",
+    summary:
+      "Create standalone documents, spreadsheets, charts, and interactive tools directly in Claude — then iterate, export, and share them.",
+    content: `## Claude Artifacts
+
+Artifacts are standalone pieces of content Claude creates in a side panel — documents, code, charts, and even interactive tools you can use immediately.
+
+### What Can Artifacts Create?
+- **Documents** — Reports, proposals, SOPs, meeting agendas
+- **Spreadsheets** — Data tables with calculations
+- **Charts & visualizations** — Bar charts, pie charts, timelines
+- **Interactive tools** — Calculators, quizzes, decision trees
+- **Diagrams** — Org charts, flowcharts, process maps
+- **Web pages** — Landing pages, dashboards, forms
+
+### How to Trigger Artifacts
+Just ask Claude to *create* something:
+\`\`\`
+"Create a project timeline chart for our Q2 product launch
+with milestones for design, development, testing, and release"
+
+"Build me an ROI calculator that takes monthly cost,
+time saved per week, and hourly rate as inputs"
+
+"Create a comparison table of our top 5 competitors
+with columns for pricing, features, and target market"
+\`\`\`
+
+### Iterating on Artifacts
+Click on any artifact and ask Claude to modify it:
+\`\`\`
+"Add a column for 'Implementation Difficulty'"
+"Change the chart colors to match our brand (coral, navy)"
+"Make the calculator also show annual savings"
+\`\`\`
+
+### Sharing & Exporting
+- **Copy** the content to paste into other tools
+- **Download** as a file (HTML, SVG, etc.)
+- **Share** a link with teammates (published artifacts)
+- **Remix** — others can modify shared artifacts
+
+### Practical Examples
+1. **Sales**: "Create a one-page proposal for [Client] based on these notes"
+2. **Marketing**: "Build an interactive quiz: 'Which franchise model is right for you?'"
+3. **Operations**: "Create a decision flowchart for handling customer complaints"
+4. **HR**: "Create an onboarding checklist with checkboxes for new hires"
+5. **Finance**: "Build a break-even calculator for franchise investment analysis"`,
+    toolName: "Claude",
+    category: "automation",
+    difficulty: "beginner",
+    tags: ["artifacts", "documents", "visualizations", "no-code", "non-developer"],
+    estimatedMinutes: 15,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "claude-chat-daily-workflows",
+    title: "Daily Workflows with Claude Chat",
+    summary:
+      "Practical prompts and workflows for everyday business tasks — email drafting, meeting prep, data analysis, writing, and decision-making.",
+    content: `## Daily Workflows with Claude Chat
+
+These are the prompts and patterns your team can use every day — no technical skills required.
+
+### Email & Communication
+**Draft a reply:**
+\`\`\`
+"Draft a professional reply to this email. Be concise,
+address their concerns, and suggest a meeting next week.
+
+[paste the email]"
+\`\`\`
+
+**Summarize a thread:**
+\`\`\`
+"Summarize this email thread into:
+- Key decisions made
+- Open questions
+- Action items with owners
+
+[paste the thread]"
+\`\`\`
+
+### Meeting Prep & Notes
+**Before a meeting:**
+\`\`\`
+"I'm meeting with [person/company] in 30 minutes about [topic].
+Give me 5 smart questions to ask and key talking points."
+\`\`\`
+
+**After a meeting:**
+\`\`\`
+"Organize these raw meeting notes into:
+- Decisions made
+- Action items (who, what, when)
+- Key discussion points
+- Follow-up needed
+
+[paste your messy notes]"
+\`\`\`
+
+### Data Analysis (Upload a File)
+Upload a CSV or spreadsheet and ask:
+\`\`\`
+"Analyze this sales data and tell me:
+- Which products are trending up/down?
+- What's our best-performing region?
+- Any patterns I should know about?
+Include a chart if it helps explain."
+\`\`\`
+
+### Writing & Editing
+\`\`\`
+"Rewrite this paragraph to be:
+- Half the length
+- More direct
+- Written for a busy executive
+
+[paste the paragraph]"
+\`\`\`
+
+### Decision Making
+\`\`\`
+"Help me decide between these options:
+Option A: [describe]
+Option B: [describe]
+
+Compare them on cost, time, risk, and impact.
+Which would you recommend and why?"
+\`\`\`
+
+### Tips for Non-Technical Users
+1. **Upload files** — Claude reads PDFs, spreadsheets, images, docs
+2. **Be specific** — "draft a 150-word email" beats "write something"
+3. **Iterate** — "make it shorter" or "add more detail about X"
+4. **Use Projects** — save your instructions once, use them forever
+5. **Ask Claude to explain** — "explain this in simple terms"`,
+    toolName: "Claude",
+    category: "workflow",
+    difficulty: "beginner",
+    tags: ["daily", "email", "meetings", "writing", "non-developer"],
+    estimatedMinutes: 15,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "chatgpt-for-business",
+    title: "ChatGPT for Business: Features & Workflows",
+    summary:
+      "Get the most from ChatGPT at work — custom GPTs, Canvas for collaborative editing, data analysis, image generation, and memory features.",
+    content: `## ChatGPT for Business
+
+ChatGPT from OpenAI is one of the most widely used AI tools. Here's how to use its key features effectively for work.
+
+### Key Features
+
+#### Custom GPTs
+Pre-configured ChatGPT versions for specific tasks:
+- Browse the GPT Store for ready-made tools
+- Create your own: Instructions + Knowledge files + Actions
+- Share with your team
+
+**Example custom GPT:**
+\`\`\`
+Name: "Franzy Email Drafter"
+Instructions: "You draft professional emails for the Franzy sales team.
+Use our brand voice (friendly, knowledgeable). Always include a clear CTA.
+Reference the attached brand guide for tone."
+Knowledge: [upload brand guide, email templates]
+\`\`\`
+
+#### Canvas
+Collaborative editing mode for documents and code:
+- ChatGPT writes in a side panel you can edit directly
+- Ask for specific changes: "make paragraph 3 more concise"
+- Great for long-form content like blog posts, reports, proposals
+
+#### Data Analysis (Advanced Data Analysis)
+Upload files and get instant analysis:
+\`\`\`
+Upload a CSV → "What are the top trends in this data?"
+Upload a PDF → "Summarize the key findings"
+Upload an image → "What does this chart show?"
+\`\`\`
+
+#### DALL-E (Image Generation)
+Generate images from text descriptions:
+\`\`\`
+"Create a professional banner image for our franchise expo booth.
+Modern, clean design with blue and white colors. Include icons
+representing food service, real estate, and technology."
+\`\`\`
+
+#### Memory
+ChatGPT remembers things across conversations:
+- "Remember that I work at Franzy on the marketing team"
+- "Remember our brand colors are coral and navy"
+- Builds up context over time without re-explaining
+
+### When to Use ChatGPT vs Claude
+| Task | ChatGPT | Claude |
+|------|---------|--------|
+| Image generation | DALL-E built in | No native image gen |
+| Long document analysis | Good | Better (200K context) |
+| Custom tools (GPTs) | GPT Store | Projects |
+| Collaborative editing | Canvas | Artifacts |
+| Web browsing | Built in | Via connectors |
+| Coding | Good | Better for complex code |
+
+### Tips
+1. **Use Custom GPTs** for repeated tasks — build once, use forever
+2. **Upload files** directly — CSVs, PDFs, images all work
+3. **Use Canvas** for anything longer than a paragraph
+4. **Enable Memory** for personal context that carries over
+5. **Browse the GPT Store** before building your own`,
+    toolName: "ChatGPT",
+    category: "workflow",
+    difficulty: "beginner",
+    tags: ["chatgpt", "openai", "gpts", "canvas", "non-developer"],
+    estimatedMinutes: 20,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "google-gemini-workspace",
+    title: "Google Gemini: AI in Your Workspace",
+    summary:
+      "Use Gemini across Google Docs, Sheets, Slides, Gmail, and Meet — built-in AI that works where you already work.",
+    content: `## Google Gemini in Workspace
+
+Gemini integrates directly into Google Workspace apps. If your team uses Google tools, AI is already one click away.
+
+### Gemini in Google Docs
+**Help me write:**
+- Click the Gemini icon or type \`@\` → "Help me write"
+- "Draft a project proposal for expanding into Texas market"
+- "Summarize this document in 3 bullet points"
+- "Rewrite this section for a non-technical audience"
+
+**Refine existing text:**
+- Select text → "Make it more formal" / "Shorten this" / "Elaborate"
+
+### Gemini in Google Sheets
+**Generate formulas:**
+\`\`\`
+"Create a formula that calculates the monthly growth rate
+from column B (revenue) and shows it as a percentage in column C"
+\`\`\`
+
+**Analyze data:**
+- "What trends do you see in this data?"
+- "Create a pivot table summarizing sales by region"
+- "Highlight rows where revenue dropped more than 10%"
+
+**Generate tables:**
+- "Create a project tracker with columns for task, owner, status, due date, and priority"
+
+### Gemini in Google Slides
+**Create presentations:**
+\`\`\`
+"Generate a 10-slide presentation about our Q1 results.
+Include slides for: executive summary, revenue, growth metrics,
+challenges, team highlights, and Q2 goals."
+\`\`\`
+
+**Generate images:**
+- "Create a background image for a slide about innovation"
+- Generates AI images directly in Slides
+
+### Gemini in Gmail
+**Draft emails:**
+- Click "Help me write" in the compose window
+- "Draft a follow-up to our meeting about the partnership"
+- "Reply professionally declining this request"
+
+**Summarize threads:**
+- Long email chain? Click "Summarize this email"
+
+### Gemini in Google Meet
+- **Real-time notes** — Gemini takes notes during the meeting
+- **Summary** — Get a meeting summary with action items after
+- **Translation** — Real-time caption translation
+
+### Gemini Chat (gemini.google.com)
+Standalone chat with unique features:
+- **Google Search integration** — answers grounded in real-time web data
+- **Google Maps** — "Find restaurants near our Austin office"
+- **YouTube** — "Summarize this YouTube video"
+- **Google Flights/Hotels** — Travel research
+
+### Best Practices
+1. **Start in Workspace** — use Gemini where you already work
+2. **Use @Gemini** in Docs for inline help
+3. **Upload to Gemini chat** for analysis of non-Google files
+4. **Combine with Sheets** for data analysis without formulas
+5. **Use Meet integration** to never miss action items`,
+    toolName: "Google Gemini",
+    category: "workflow",
+    difficulty: "beginner",
+    tags: ["gemini", "google", "workspace", "docs", "sheets", "non-developer"],
+    estimatedMinutes: 20,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "microsoft-copilot-365",
+    title: "Microsoft Copilot: AI in Office 365",
+    summary:
+      "Use Copilot across Word, Excel, PowerPoint, Outlook, and Teams — the AI assistant built into the tools you already use daily.",
+    content: `## Microsoft Copilot in Office 365
+
+If your organization uses Microsoft 365, Copilot adds AI directly into Word, Excel, PowerPoint, Outlook, and Teams.
+
+### Copilot in Word
+**Draft documents:**
+\`\`\`
+"Draft a vendor evaluation report comparing three CRM platforms.
+Include sections for features, pricing, integration capabilities,
+and a recommendation."
+\`\`\`
+
+**Edit existing text:**
+- Select text → Copilot icon → "Make it more concise"
+- "Rewrite for a C-suite audience"
+- "Add a table summarizing the key points"
+
+**Reference other files:**
+- "Draft a summary based on /Q4 Sales Report.xlsx"
+- Copilot can pull from your OneDrive/SharePoint files
+
+### Copilot in Excel
+**Analyze data:**
+\`\`\`
+"What are the key trends in this sales data?"
+"Which product category has the highest growth rate?"
+"Create a chart showing monthly revenue by region"
+\`\`\`
+
+**Generate formulas:**
+- "Add a column that calculates profit margin"
+- "Create a VLOOKUP to match customer IDs from Sheet2"
+
+**Format & clean data:**
+- "Highlight all cells where value exceeds budget"
+- "Sort by date and remove duplicate entries"
+
+### Copilot in PowerPoint
+**Create presentations:**
+\`\`\`
+"Create a presentation from /Project Proposal.docx"
+"Add a slide comparing our pricing vs competitors"
+"Generate speaker notes for each slide"
+\`\`\`
+
+**Design help:**
+- "Make this slide more visual"
+- "Add an icon for each bullet point"
+- "Convert this text to a SmartArt diagram"
+
+### Copilot in Outlook
+**Email drafting:**
+- "Draft a reply accepting the meeting but suggesting Thursday instead"
+- "Summarize this email thread"
+- "Write a professional decline for this request"
+
+**Email management:**
+- "What emails need my response today?"
+- "Find all emails from [person] about [topic]"
+
+### Copilot in Teams
+**During meetings:**
+- Real-time transcription and notes
+- "What has been discussed so far?"
+- "List the action items from this meeting"
+
+**After meetings:**
+- Auto-generated meeting summary
+- Action items with assigned owners
+- Key decisions highlighted
+
+### When to Use Copilot
+| Task | Best For |
+|------|----------|
+| Documents from templates | Word |
+| Data analysis & charts | Excel |
+| Presentation creation | PowerPoint |
+| Email management | Outlook |
+| Meeting summaries | Teams |
+
+### Tips
+1. **Reference files** — Copilot works best when you point it to existing docs
+2. **Be specific** — "Create a 5-slide deck" beats "make a presentation"
+3. **Iterate** — Ask for changes instead of starting over
+4. **Use in Teams** — Meeting summaries alone justify the cost
+5. **Check accuracy** — Always review AI-generated content`,
+    toolName: "Microsoft Copilot",
+    category: "workflow",
+    difficulty: "beginner",
+    tags: ["copilot", "microsoft", "office365", "word", "excel", "non-developer"],
+    estimatedMinutes: 20,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "perplexity-research",
+    title: "Perplexity AI: Research & Fact-Checking",
+    summary:
+      "Use Perplexity for research that cites its sources — competitive analysis, market research, fact-checking, and staying current on industry trends.",
+    content: `## Perplexity AI for Research
+
+Perplexity is an AI-powered research tool that searches the web in real time and cites every source. Think of it as Google search that reads and summarizes the results for you.
+
+### Why Perplexity for Research?
+- **Citations on everything** — every claim links to a source
+- **Real-time web search** — always current information
+- **Follow-up questions** — dig deeper without starting over
+- **Collections** — organize research into folders
+
+### Research Workflows
+
+#### Competitive Analysis
+\`\`\`
+"What are the top 5 franchise matching platforms competing
+with Franzy? For each, list:
+- Their main features
+- Pricing model
+- Target audience
+- Key differentiators
+- Recent news or funding"
+\`\`\`
+
+#### Market Research
+\`\`\`
+"What is the current state of the franchise industry in 2025?
+Include market size, growth trends, most popular categories,
+and any notable shifts in investor behavior."
+\`\`\`
+
+#### Fact-Checking
+\`\`\`
+"Is it true that the average franchise failure rate
+is lower than independent businesses? Cite specific studies."
+\`\`\`
+
+#### Industry Monitoring
+\`\`\`
+"What are the biggest franchise industry news stories
+from the past week? Focus on QSR, home services,
+and fitness categories."
+\`\`\`
+
+### Pro Features
+- **Focus modes**: Academic (scholarly sources), Writing (detailed), Math, Video, Social
+- **Collections**: Save and organize research by topic
+- **File upload**: Upload documents and ask questions about them
+- **API access**: For developers who want to integrate search
+
+### Perplexity vs Other Tools
+| Task | Perplexity | Claude | ChatGPT |
+|------|-----------|--------|---------|
+| Current events | Best (live search) | Limited | Good (browsing) |
+| Source citations | Every answer cited | On request | Sometimes |
+| Deep analysis | Good | Best | Good |
+| Follow-up research | Excellent | Good | Good |
+| Creative writing | Limited | Best | Good |
+
+### Tips
+1. **Use for anything time-sensitive** — Perplexity always has current data
+2. **Click the citations** — verify claims before sharing with stakeholders
+3. **Use Focus modes** — Academic for research, Writing for content
+4. **Save to Collections** — build a research library over time
+5. **Use follow-up questions** — "Tell me more about [specific finding]"`,
+    toolName: "Perplexity",
+    category: "workflow",
+    difficulty: "beginner",
+    tags: ["perplexity", "research", "citations", "fact-checking", "non-developer"],
+    estimatedMinutes: 15,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "notebooklm-docs",
+    title: "NotebookLM: Turn Documents into Knowledge",
+    summary:
+      "Use Google's NotebookLM to upload documents and get AI-powered Q&A, summaries, study guides, and even audio overviews of your content.",
+    content: `## NotebookLM: Document Intelligence
+
+NotebookLM from Google turns your documents into an interactive knowledge base. Upload files, and the AI answers questions *only* from your sources — no hallucination from outside knowledge.
+
+### What Makes NotebookLM Different?
+- **Grounded answers only** — Claude/ChatGPT use general knowledge; NotebookLM answers *only* from your uploaded docs
+- **Audio Overview** — converts documents into a podcast-style audio discussion
+- **Source citations** — every answer points to the exact passage
+- **Multi-document** — upload up to 50 sources per notebook
+
+### Supported Sources
+- Google Docs and Slides
+- PDFs
+- Web URLs
+- YouTube videos
+- Plain text / Markdown
+- Audio files
+
+### Use Cases
+
+#### Onboarding New Employees
+Upload your employee handbook, SOPs, and training docs:
+\`\`\`
+"What's the process for requesting PTO?"
+"Explain our expense reimbursement policy"
+"What are the key points from the employee handbook?"
+\`\`\`
+
+#### Meeting & Call Prep
+Upload past meeting notes, reports, and emails:
+\`\`\`
+"What did we decide about the Texas expansion in last month's meeting?"
+"Summarize all the action items from the last 3 meetings"
+\`\`\`
+
+#### Document Analysis
+Upload contracts, proposals, or reports:
+\`\`\`
+"Compare the terms of Vendor A and Vendor B proposals"
+"What are the key risks mentioned in this report?"
+"Create a summary of the main findings"
+\`\`\`
+
+#### Audio Overview (Podcast Mode)
+NotebookLM's standout feature:
+1. Upload your documents
+2. Click "Generate Audio Overview"
+3. Two AI hosts discuss your content in a natural podcast format
+4. Listen on your commute or while multitasking
+
+Great for:
+- Turning a 50-page report into a 15-minute listen
+- Team members who prefer audio learning
+- Making dense content more accessible
+
+### NotebookLM vs Other Tools
+| Feature | NotebookLM | Claude | ChatGPT |
+|---------|-----------|--------|---------|
+| Grounded answers only | Yes | Optional | No |
+| Audio overview | Yes | No | No |
+| Multi-doc analysis | Up to 50 | Large context | Limited |
+| General knowledge | No | Yes | Yes |
+| Creative writing | No | Yes | Yes |
+
+### Tips
+1. **Upload everything relevant** — more sources = better answers
+2. **Use Audio Overview** for long reports you don't have time to read
+3. **Create separate notebooks** for different projects
+4. **Trust the citations** — click through to verify
+5. **Combine with Claude** — use NotebookLM for grounded answers, Claude for creative tasks`,
+    toolName: "NotebookLM",
+    category: "automation",
+    difficulty: "beginner",
+    tags: ["notebooklm", "google", "documents", "audio", "non-developer"],
+    estimatedMinutes: 15,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "manus-autonomous-agent",
+    title: "Manus AI: Autonomous Task Execution",
+    summary:
+      "Use Manus to delegate entire multi-step tasks — research projects, data collection, report generation, and web-based workflows that run autonomously.",
+    content: `## Manus AI: Autonomous Task Execution
+
+Manus is an autonomous AI agent that can browse the web, use tools, and complete multi-step tasks on its own. Think of it as giving an AI intern a task and getting the finished result.
+
+### How Manus Works
+1. You describe a task in natural language
+2. Manus plans the steps
+3. It executes each step autonomously (browsing, searching, analyzing)
+4. You get the finished result
+
+### What Manus Can Do
+- **Browse the web** — navigate sites, fill forms, extract data
+- **Research** — search multiple sources and compile findings
+- **Create documents** — reports, spreadsheets, presentations
+- **Data collection** — gather information from multiple websites
+- **Analysis** — process and summarize collected data
+
+### Use Cases
+
+#### Market Research
+\`\`\`
+"Research the top 10 home service franchises under $100K investment.
+For each, find: franchise fee, total investment range, number of units,
+year founded, and recent news. Create a comparison spreadsheet."
+\`\`\`
+
+#### Competitive Intelligence
+\`\`\`
+"Monitor our top 3 competitors' websites and social media.
+Identify any new features, pricing changes, or partnerships
+announced in the last month. Summarize in a report."
+\`\`\`
+
+#### Lead Research
+\`\`\`
+"Research these 20 companies [list]. For each, find the
+decision-maker's name, title, LinkedIn profile, company size,
+and any recent news. Format as a CSV."
+\`\`\`
+
+#### Content Research
+\`\`\`
+"Find the 10 most-discussed franchise industry topics on Reddit
+and Twitter this week. For each, summarize the discussion,
+sentiment, and any actionable insights for our marketing team."
+\`\`\`
+
+### Manus vs Chat-Based AI
+| Feature | Manus | Claude/ChatGPT |
+|---------|-------|---------------|
+| Autonomous execution | Yes — runs on its own | No — needs back-and-forth |
+| Web browsing | Full browser | Limited/connectors |
+| Multi-step tasks | Plans and executes | One step at a time |
+| Time to result | Minutes to hours (runs alone) | Real-time but manual |
+| Best for | Research, data collection | Analysis, writing, reasoning |
+
+### Best Practices
+1. **Be specific about output format** — "create a spreadsheet with columns for..."
+2. **Set scope** — "focus on US market only" prevents rabbit holes
+3. **Review results** — always verify before sharing externally
+4. **Start with research tasks** — Manus excels at gathering and organizing
+5. **Combine with Claude** — use Manus to gather data, Claude to analyze it`,
+    toolName: "Manus",
+    category: "automation",
+    difficulty: "beginner",
+    tags: ["manus", "autonomous", "agent", "research", "non-developer"],
+    estimatedMinutes: 15,
+    createdAt: "2025-03-01",
+  },
+  {
+    id: "ai-tool-chooser",
+    title: "Choosing the Right AI Tool for the Job",
+    summary:
+      "A practical decision guide for picking the best AI tool — Claude, ChatGPT, Gemini, Copilot, Perplexity, NotebookLM, or Manus — based on your actual task.",
+    content: `## Choosing the Right AI Tool
+
+You have access to multiple AI tools. Using the right one for each task makes a big difference in quality and speed.
+
+### Quick Decision Guide
+
+| Task | Best Tool | Why |
+|------|-----------|-----|
+| Long document analysis | **Claude** | 200K context, best reasoning |
+| Quick current events lookup | **Perplexity** | Real-time search, citations |
+| Creating presentations | **Copilot** or **Gemini** | Native Office/Workspace integration |
+| Spreadsheet formulas | **Copilot** (Excel) or **Gemini** (Sheets) | Works in-app |
+| Image generation | **ChatGPT** (DALL-E) | Best built-in image gen |
+| Research with sources | **Perplexity** | Every answer cited |
+| Onboarding docs Q&A | **NotebookLM** | Grounded in your docs only |
+| Multi-step web research | **Manus** | Autonomous execution |
+| Writing & editing | **Claude** or **ChatGPT** | Both excellent |
+| Meeting summaries | **Copilot** (Teams) or **Gemini** (Meet) | Native integration |
+| Code & technical work | **Claude Code** | Purpose-built for coding |
+
+### Decision Framework
+Ask yourself:
+
+**1. Where does this task happen?**
+- In Google Workspace → **Gemini**
+- In Office 365 → **Copilot**
+- Standalone task → **Claude** or **ChatGPT**
+
+**2. Do I need current information?**
+- Yes → **Perplexity** (best citations) or **ChatGPT** (browsing)
+- No, working with existing docs → **Claude** or **NotebookLM**
+
+**3. How complex is the reasoning?**
+- Complex analysis, long docs → **Claude**
+- Simple Q&A, quick tasks → Any tool works
+- Multi-step autonomous → **Manus**
+
+**4. Do I need to generate images?**
+- Yes → **ChatGPT** (DALL-E) or **Gemini**
+- No → Use whichever is best for the text task
+
+**5. Do I need grounded-in-my-docs answers?**
+- Yes, strictly → **NotebookLM**
+- Yes, with some flexibility → **Claude Projects**
+- No → Any tool
+
+### Combining Tools
+The power users on your team combine tools:
+
+**Research workflow:**
+1. **Perplexity** — gather current data with citations
+2. **Claude** — analyze and synthesize into insights
+3. **Copilot/Gemini** — format into a presentation
+
+**Content workflow:**
+1. **Perplexity** — research topic and find sources
+2. **Claude** — draft the content
+3. **ChatGPT** — generate accompanying images
+4. **Gemini** — publish to Google Docs for team review
+
+**Sales workflow:**
+1. **Manus** — research prospect companies
+2. **Claude** — draft personalized outreach
+3. **Copilot** — schedule follow-ups in Outlook
+
+### Tips
+1. **Don't force one tool** — each has strengths
+2. **Start with what's integrated** — Gemini in Workspace, Copilot in Office
+3. **Use Claude for thinking** — complex analysis and reasoning
+4. **Use Perplexity for facts** — anything needing current, cited info
+5. **Experiment** — try the same task in two tools and compare`,
+    toolName: "Claude",
+    category: "best-practices",
+    difficulty: "beginner",
+    tags: ["comparison", "decision-guide", "tools", "non-developer"],
+    estimatedMinutes: 10,
+    createdAt: "2025-03-01",
+  },
+
   // ─── AI Connectors ───
   {
     id: "ai-connectors",

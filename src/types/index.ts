@@ -71,3 +71,24 @@ export interface Recommendation {
   score: number;
   reason: string;
 }
+
+export type DiscoverSource = "reddit" | "twitter" | "hackernews" | "web";
+
+export interface DiscoverItem {
+  id: string;
+  title: string;
+  summary: string;
+  source: DiscoverSource;
+  sourceUrl: string;
+  author?: string;
+  subreddit?: string;
+  score: number;
+  commentCount?: number;
+  aiTools: string[];
+  useCase: string;
+  franzyRelevance: string;
+  category: Category;
+  difficulty: Difficulty;
+  fetchedAt: string;
+  thumbnailUrl?: string;
+}
