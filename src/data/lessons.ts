@@ -1431,777 +1431,975 @@ app.message(/customer request/i, async ({ message }) => {
     skilljarCourse: "Building with the Claude API",
   },
 
-  // ─── Franzy-Specific: Franchise Matching Platform ───
+  // ─── AI Tools & Techniques ───
   {
-    id: "franzy-fit-score-claude",
-    title: "Improving Franzy Fit Score with Claude",
+    id: "prompt-engineering-fundamentals",
+    title: "Prompt Engineering Fundamentals",
     summary:
-      "Use Claude to enhance franchise-investor matching — better scoring, explainable recommendations, and natural language queries against your franchise database.",
-    content: `## Enhancing Franzy Fit Score with Claude
+      "Master the core techniques for writing effective prompts — role assignment, structured output, chain-of-thought reasoning, and iterative refinement.",
+    content: `## Prompt Engineering Fundamentals
 
-The Franzy Fit Score already uses AI to match investors with franchises. Here's how to augment it with Claude for deeper, more explainable matching.
+Great prompts get great results. This lesson covers the techniques that separate vague asks from precise, reliable outputs.
 
-### Explainable Match Reasons
-Instead of just a score, give investors a narrative:
-\`\`\`typescript
-const explainMatch = async (investor: InvestorProfile, franchise: Franchise) => {
-  const response = await claude.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 1024,
-    system: \`You are a franchise advisor. Given an investor profile and
-    franchise details, explain why this is a good (or poor) match.
-    Be specific about financial fit, lifestyle alignment, and market factors.\`,
-    messages: [{
-      role: "user",
-      content: \`Investor: \${JSON.stringify(investor)}
-Franchise: \${JSON.stringify(franchise)}
-Fit Score: \${investor.fitScore}
-
-Explain this match in 3-4 sentences that help the investor decide.\`
-    }]
-  });
-  return response.content[0].text;
-};
+### 1. Role Assignment
+Tell Claude *who* it is before *what* to do:
+\`\`\`
+"You are a senior backend engineer reviewing a pull request.
+Focus on security vulnerabilities, performance issues, and
+API contract changes. Flag severity as critical/warning/info."
 \`\`\`
 
-### Natural Language Franchise Search
-Let investors search with questions instead of filters:
-\`\`\`typescript
-// "I have $150K, want a food franchise in Texas, semi-absentee"
-const tools = [{
-  name: "search_franchises",
-  description: "Search the Franzy franchise database",
-  input_schema: {
-    type: "object",
-    properties: {
-      investmentRange: { type: "object", properties: {
-        min: { type: "number" }, max: { type: "number" }
-      }},
-      categories: { type: "array", items: { type: "string" } },
-      states: { type: "array", items: { type: "string" } },
-      ownershipType: { enum: ["owner-operator", "semi-absentee", "absentee"] }
-    }
-  }
-}];
+Why it works: roles activate relevant knowledge and set the tone for responses.
+
+### 2. Structured Output
+Ask for the format you need:
+\`\`\`
+"Analyze this error log and return a JSON object with:
+{
+  "root_cause": "one-sentence summary",
+  "affected_services": ["list of services"],
+  "severity": "critical | high | medium | low",
+  "suggested_fix": "specific action to take",
+  "related_errors": ["any patterns you notice"]
+}"
 \`\`\`
 
-### FDD Document Analysis
-Use Claude to summarize Franchise Disclosure Documents:
-- Extract key financial metrics (Item 19, Item 7)
-- Compare terms across similar franchises
-- Flag unusual clauses or restrictions
-- Generate investor-friendly summaries
+### 3. Chain-of-Thought
+For complex reasoning, ask Claude to think step by step:
+\`\`\`
+"Before answering, walk through your reasoning:
+1. What are the constraints?
+2. What are the trade-offs between approaches?
+3. What's your recommendation and why?"
+\`\`\`
 
-### Franzy-Specific Applications
-1. **Match explanation** — Why this franchise fits this investor
-2. **Franchise comparison** — Side-by-side analysis for investors
-3. **Market analysis** — Territory opportunity assessment
-4. **Risk assessment** — Financial viability scoring`,
-    toolName: "Claude API",
-    category: "automation",
-    difficulty: "intermediate",
-    tags: ["fit-score", "matching", "franchise", "franzy"],
-    estimatedMinutes: 30,
+### 4. Few-Shot Examples
+Show Claude what you want with examples:
+\`\`\`
+"Convert these user stories to acceptance criteria.
+
+Example:
+Story: 'As a user, I want to reset my password'
+Criteria:
+- User clicks 'Forgot Password' on login page
+- System sends reset link to registered email within 30 seconds
+- Link expires after 24 hours
+- User must set password meeting complexity requirements
+
+Now convert this story: 'As a user, I want to filter search results by date range'"
+\`\`\`
+
+### 5. Iterative Refinement
+Don't expect perfection on the first try. Build up:
+1. Start with a rough prompt
+2. Review the output — what's missing?
+3. Add constraints: "Also include..." or "Don't..."
+4. Save your refined prompt for reuse
+
+### Common Mistakes
+- **Too vague**: "Write me something about marketing" → Add audience, format, length, purpose
+- **Too constrained**: Walls of rules that contradict → Pick the top 3-5 constraints
+- **No context**: Asking about "the code" without sharing it → Always include relevant context
+- **Ignoring iteration**: Treating the first response as final → Refine and follow up`,
+    toolName: "Claude",
+    category: "best-practices",
+    difficulty: "beginner",
+    tags: ["prompts", "fundamentals", "techniques", "getting-started"],
+    estimatedMinutes: 20,
     createdAt: "2025-02-08",
   },
   {
-    id: "franzy-investor-comms",
-    title: "Automating Investor Communications",
+    id: "tool-use-structured-output",
+    title: "Tool Use & Structured Output with the Claude API",
     summary:
-      "Use Claude to draft personalized investor emails, classify inbound inquiries, and automate follow-up sequences for franchise leads.",
-    content: `## Investor Communication Automation
+      "Use Claude's tool use feature to get perfectly structured JSON every time — classification, extraction, and multi-step workflows.",
+    content: `## Tool Use & Structured Output
 
-Franzy handles thousands of investor inquiries. Claude can help personalize and automate communication without losing the human touch.
+Tool use (function calling) is the most reliable way to get structured data from Claude. Instead of hoping the model outputs valid JSON, you define a schema and Claude fills it.
 
-### Classify Incoming Investor Inquiries
+### Basic Tool Use Pattern
 \`\`\`typescript
-const classifyInquiry = async (message: string) => {
-  const response = await claude.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 256,
-    tools: [{
-      name: "classify_inquiry",
-      description: "Classify a franchise investor inquiry",
-      input_schema: {
-        type: "object",
-        properties: {
-          stage: { enum: ["browsing", "researching", "ready-to-invest", "returning"] },
-          intent: { enum: ["general-info", "specific-brand", "financing", "territory", "support"] },
-          investmentLevel: { enum: ["under-50k", "50k-150k", "150k-500k", "500k-plus", "unknown"] },
-          urgency: { enum: ["high", "medium", "low"] },
-          suggestedAction: { type: "string" }
-        },
-        required: ["stage", "intent", "urgency", "suggestedAction"]
-      }
-    }],
-    tool_choice: { type: "tool", name: "classify_inquiry" },
-    messages: [{ role: "user", content: message }]
-  });
-  return response.content[0].input;
-};
+const response = await client.messages.create({
+  model: "claude-sonnet-4-20250514",
+  max_tokens: 1024,
+  tools: [{
+    name: "extract_contact",
+    description: "Extract contact information from text",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        email: { type: "string" },
+        company: { type: "string" },
+        role: { type: "string" },
+        phone: { type: "string" }
+      },
+      required: ["name", "email"]
+    }
+  }],
+  tool_choice: { type: "tool", name: "extract_contact" },
+  messages: [{ role: "user", content: emailText }]
+});
+
+const contact = response.content[0].input;
+// { name: "Jane Smith", email: "jane@acme.com", company: "Acme", ... }
 \`\`\`
 
-### Personalized Follow-Up Drafts
-\`\`\`
-"Draft a follow-up email for an investor who:
-- Viewed 5 QSR franchises in the $100-200K range
-- Completed their Fit Score profile but hasn't requested info
-- Located in Austin, TX
-- Previously worked in restaurant management"
+### Classification with Enums
+Force Claude to pick from your categories:
+\`\`\`typescript
+input_schema: {
+  type: "object",
+  properties: {
+    category: {
+      type: "string",
+      enum: ["bug", "feature-request", "question", "complaint"]
+    },
+    priority: {
+      type: "string",
+      enum: ["critical", "high", "medium", "low"]
+    },
+    summary: { type: "string" }
+  }
+}
 \`\`\`
 
-### Communication Workflows
-1. **New lead** → Classify intent & investment level → Route to right sequence
-2. **Stale lead (7 days)** → Claude drafts re-engagement email with new matches
-3. **Post-call** → Auto-summarize call notes, draft next steps
-4. **Franchisor intro** → Personalized introduction email with Fit Score context
+### Multi-Step Tool Chains
+Claude can call multiple tools in sequence:
+1. \`search_database\` → find relevant records
+2. \`analyze_results\` → process and rank them
+3. \`format_report\` → structure the final output
 
-### Best Practices
-- Always flag AI-drafted emails for human review before sending
-- Include Fit Score context in every franchisor introduction
-- Personalize based on investor's browsing behavior on franzy.com`,
+### When to Use Tool Use vs. Plain Prompts
+| Scenario | Approach |
+|----------|----------|
+| Need exact JSON schema | Tool use |
+| Free-form text response | Plain prompt |
+| Classification into known categories | Tool use |
+| Creative writing | Plain prompt |
+| Data extraction from documents | Tool use |
+| Conversational Q&A | Plain prompt |
+
+### Tips
+- Use \`tool_choice: { type: "tool", name: "..." }\` to force a specific tool
+- Use \`tool_choice: { type: "auto" }\` when Claude should decide whether to call a tool
+- Keep descriptions clear — Claude uses them to understand when and how to use the tool
+- Use \`required\` fields to ensure critical data is always returned`,
     toolName: "Claude API",
-    category: "communication",
+    category: "coding",
     difficulty: "intermediate",
-    tags: ["email", "investors", "leads", "communication", "franzy"],
+    tags: ["tool-use", "structured-output", "api", "json", "extraction"],
     estimatedMinutes: 25,
     createdAt: "2025-02-10",
   },
   {
-    id: "franzy-franchise-data-mcp",
-    title: "MCP Server for Franzy's Franchise Database",
+    id: "building-mcp-servers",
+    title: "Building Custom MCP Servers",
     summary:
-      "Build a custom MCP server to let Claude query your franchise database, search Typesense, and access investor profiles directly.",
-    content: `## MCP Server for Franzy Data
+      "Build Model Context Protocol servers to give Claude access to your databases, APIs, and internal tools — with practical examples in Python and TypeScript.",
+    content: `## Building Custom MCP Servers
 
-Give Claude direct access to Franzy's franchise database and Typesense search index through a custom MCP server.
+MCP (Model Context Protocol) lets Claude access your data and tools directly. Instead of copy-pasting context, Claude queries your systems in real time.
 
 ### Architecture
 \`\`\`
-Claude Code / Claude API
+Claude Code / Claude Desktop
     ↓
-MCP Client
+MCP Client (built into Claude)
     ↓
-Franzy MCP Server
-    ├─ Typesense (franchise search)
-    ├─ PostgreSQL (investor profiles, matches)
-    └─ Franzy API (Fit Score, Connect Tool)
+Your MCP Server
+    ├─ Database queries
+    ├─ Internal APIs
+    └─ File systems / search indexes
 \`\`\`
 
-### Python MCP Server
+### Python MCP Server (FastMCP)
 \`\`\`python
 from mcp.server.fastmcp import FastMCP
-import typesense
+import sqlite3
 
-mcp = FastMCP("franzy-data")
-
-# Initialize Typesense client
-ts_client = typesense.Client({
-    "api_key": os.environ["TYPESENSE_API_KEY"],
-    "nodes": [{"host": "search.franzy.com", "port": 443, "protocol": "https"}]
-})
+mcp = FastMCP("my-company-data")
 
 @mcp.tool()
-def search_franchises(
-    query: str,
-    min_investment: int = 0,
-    max_investment: int = 1000000,
-    categories: list[str] | None = None
-) -> str:
-    """Search Franzy's franchise database with filters."""
-    filter_by = f"min_investment:<={max_investment} && max_investment:>={min_investment}"
-    if categories:
-        filter_by += f" && category:={categories}"
-
-    results = ts_client.collections["franchises"].documents.search({
-        "q": query,
-        "query_by": "name,description,category",
-        "filter_by": filter_by,
-        "sort_by": "fit_score:desc"
-    })
-    return json.dumps(results["hits"][:10])
+def search_customers(query: str, limit: int = 10) -> str:
+    """Search the customer database by name or email."""
+    conn = sqlite3.connect("customers.db")
+    results = conn.execute(
+        "SELECT id, name, email, plan FROM customers "
+        "WHERE name LIKE ? OR email LIKE ? LIMIT ?",
+        (f"%{query}%", f"%{query}%", limit)
+    ).fetchall()
+    return json.dumps([dict(zip(["id","name","email","plan"], r)) for r in results])
 
 @mcp.tool()
-def get_investor_profile(investor_id: str) -> str:
-    """Get an investor's profile and match history."""
-    profile = db.query("SELECT * FROM investors WHERE id = %s", investor_id)
-    matches = db.query("SELECT * FROM matches WHERE investor_id = %s ORDER BY score DESC", investor_id)
-    return json.dumps({"profile": profile, "recent_matches": matches[:5]})
+def get_recent_tickets(customer_id: str) -> str:
+    """Get recent support tickets for a customer."""
+    conn = sqlite3.connect("support.db")
+    tickets = conn.execute(
+        "SELECT id, subject, status, created_at FROM tickets "
+        "WHERE customer_id = ? ORDER BY created_at DESC LIMIT 5",
+        (customer_id,)
+    ).fetchall()
+    return json.dumps([dict(zip(["id","subject","status","created"], t)) for t in tickets])
 
-@mcp.resource("franchise://{franchise_id}")
-def get_franchise_details(franchise_id: str) -> str:
-    """Get detailed franchise information including FDD highlights."""
-    return json.dumps(db.query("SELECT * FROM franchises WHERE id = %s", franchise_id))
+@mcp.resource("docs://{doc_id}")
+def get_internal_doc(doc_id: str) -> str:
+    """Fetch an internal knowledge base document."""
+    return load_document(doc_id)
 
 mcp.run()
 \`\`\`
 
-### Use Cases in Claude Code
-\`\`\`bash
-claude "Search for food franchises under $200K in Texas"
-claude "Pull the investor profile for ID 12345 and suggest new matches"
-claude "Compare the FDD terms of McDonald's vs Chick-fil-A"
+### TypeScript MCP Server
+\`\`\`typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+
+const server = new McpServer({ name: "analytics", version: "1.0.0" });
+
+server.tool("query_metrics",
+  { metric: z.enum(["revenue", "signups", "churn"]), days: z.number().default(30) },
+  async ({ metric, days }) => {
+    const data = await db.query(\`SELECT date, value FROM metrics WHERE name = $1 AND date > NOW() - INTERVAL '\${days} days'\`, [metric]);
+    return { content: [{ type: "text", text: JSON.stringify(data.rows) }] };
+  }
+);
 \`\`\`
 
-### Integration with GrowthBook
-Use the MCP server to also query GrowthBook experiment results:
-- Which matching algorithms perform better?
-- A/B test results on email templates
-- Conversion funnel analysis`,
+### Configuring Claude Code
+Add to your project's \`.mcp.json\`:
+\`\`\`json
+{
+  "mcpServers": {
+    "my-data": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "env": { "DATABASE_URL": "..." }
+    }
+  }
+}
+\`\`\`
+
+### Best Practices
+1. **Keep tools focused** — one tool per action, clear descriptions
+2. **Return structured data** — JSON that Claude can reason about
+3. **Limit result size** — paginate or cap results to avoid overwhelming context
+4. **Add resources** for reference data Claude should read, not execute
+5. **Use environment variables** for credentials — never hardcode`,
     toolName: "MCP",
     category: "coding",
     difficulty: "advanced",
-    tags: ["mcp", "typesense", "database", "franchise-data", "franzy"],
+    tags: ["mcp", "servers", "database", "api", "integration"],
     estimatedMinutes: 35,
     createdAt: "2025-02-12",
   },
   {
-    id: "franzy-codebase-claude-code",
-    title: "Using Claude Code with Franzy's Next.js Codebase",
+    id: "claude-code-setup",
+    title: "Setting Up Claude Code for Your Codebase",
     summary:
-      "Set up Claude Code for Franzy's Next.js/React app — CLAUDE.md config, search component debugging, Typesense integration, and GrowthBook feature flags.",
-    content: `## Claude Code for Franzy's Stack
+      "Configure Claude Code for maximum effectiveness — CLAUDE.md files, custom commands, MCP integration, and real-world workflows for any tech stack.",
+    content: `## Setting Up Claude Code for Your Codebase
 
-Franzy runs on Next.js/React with Typesense search and GrowthBook feature flags. Here's how to configure Claude Code for maximum effectiveness.
+Claude Code works best when it understands your project. A few minutes of setup saves hours of repeated context.
 
-### CLAUDE.md for Franzy
+### CLAUDE.md — Your Project's AI Config
+Create a \`CLAUDE.md\` file at your project root:
 \`\`\`markdown
-# Franzy — Franchise Matching Platform
+# My Project
 
 ## Stack
-- Next.js 14 (App Router)
-- TypeScript (strict)
-- Tailwind CSS
-- Typesense (franchise search)
-- GrowthBook (feature flags & experiments)
-- Referral Rock (referral tracking)
+- Next.js 14 (App Router), TypeScript (strict), Tailwind CSS
+- PostgreSQL via Prisma ORM
+- Redis for caching
+- Deployed on Vercel
 
 ## Architecture
-- src/app/ — Pages (franchise browse, investor dashboard, matching)
-- src/components/ — Shared UI (FranchiseCard, FitScoreBadge, SearchFilters)
-- src/lib/ — Typesense client, GrowthBook config, API helpers
-- src/hooks/ — Custom hooks (useSearch, useFitScore, useInvestorProfile)
+- src/app/ — Pages and API routes
+- src/components/ — React components (colocated with tests)
+- src/lib/ — Shared utilities, database client, auth helpers
+- src/hooks/ — Custom React hooks
 
 ## Key Patterns
-- Server components by default, client only for interactive search/filters
-- Typesense for all franchise search (NOT database queries)
-- GrowthBook feature flags wrap all new features
-- Fit Score calculations happen server-side
+- Server components by default; "use client" only when needed
+- All database queries go through Prisma (never raw SQL)
+- Auth via NextAuth.js — check session in middleware
+- Feature flags in src/lib/flags.ts
 
 ## Commands
-- npm run dev — Start dev server
-- npm test — Run test suite
-- npm run build — Production build
-- npm run search:reindex — Reindex Typesense
+- npm run dev — Start dev server (port 3000)
+- npm test — Jest + React Testing Library
+- npm run build — Production build (must pass before merging)
+- npm run db:migrate — Run Prisma migrations
 \`\`\`
 
-### Common Tasks
+### What to Include in CLAUDE.md
+1. **Stack & versions** — So Claude picks the right APIs
+2. **Architecture** — Where things live in the codebase
+3. **Patterns & conventions** — How your team writes code
+4. **Commands** — Build, test, lint, deploy
+5. **Gotchas** — Things that are easy to get wrong
+
+### Effective Claude Code Prompts
 \`\`\`bash
-# Debug search results
-claude "The franchise search isn't returning results for 'pizza'.
-Check the Typesense query in useSearch and the index schema."
+# Bug fixing — give Claude the error
+claude "Fix this TypeScript error in src/lib/auth.ts:
+'Property session does not exist on type Request'.
+Check the middleware and NextAuth config."
 
-# Add a new filter
-claude "Add a 'semi-absentee' filter to the franchise search page.
-Follow the pattern of the existing category filter."
+# Feature development — reference existing patterns
+claude "Add a /api/webhooks/stripe endpoint.
+Follow the pattern in /api/webhooks/github for error handling and validation."
 
-# GrowthBook experiment
-claude "Wrap the new Fit Score explanation component in a
-GrowthBook feature flag called 'fit-score-v2-explanation'"
+# Refactoring — be specific about scope
+claude "Refactor the useSearch hook to use React Query instead of
+manual fetch + useState. Keep the same return type interface."
 \`\`\`
 
-### Tips for Franzy's Codebase
-1. Always check GrowthBook before shipping new UI
-2. Test search changes against the Typesense staging index
-3. Fit Score changes need both frontend and API updates
-4. Run \`npm run search:reindex\` after schema changes`,
+### Nested CLAUDE.md
+Put additional CLAUDE.md files in subdirectories for team-specific context:
+- \`src/components/CLAUDE.md\` — Component conventions, design system tokens
+- \`src/api/CLAUDE.md\` — API patterns, auth requirements, rate limits
+
+### Tips
+- Keep CLAUDE.md under 500 lines — concise beats comprehensive
+- Update it when patterns change — stale docs are worse than none
+- Include examples of good code from your project
+- List things Claude should *not* do (e.g., "Never use \`any\` type")`,
     toolName: "Claude Code",
     category: "coding",
     difficulty: "intermediate",
-    tags: ["nextjs", "typesense", "growthbook", "codebase", "franzy"],
+    tags: ["claude-code", "setup", "configuration", "codebase", "claudemd"],
     estimatedMinutes: 20,
     createdAt: "2025-02-15",
   },
   {
-    id: "franzy-analytics-cowork",
-    title: "Automating Franzy Analytics with Cowork",
+    id: "automating-reports-cowork",
+    title: "Automating Reports & Dashboards with Cowork",
     summary:
-      "Use Claude Cowork to automate weekly franchise matching reports, investor funnel analysis, and franchisor performance dashboards.",
-    content: `## Franzy Analytics Automation
+      "Use Claude Cowork to automate recurring reports, dashboard monitoring, and data exports — no code required.",
+    content: `## Automating Reports & Dashboards with Cowork
 
-Claude Cowork can automate the reports and dashboard checks your team does manually every week.
+Claude Cowork automates browser-based tasks on a schedule. Perfect for reports that someone manually runs every week.
 
 ### What to Automate
-- **Weekly matching report** — How many investors matched, conversion rates, top franchises
-- **Funnel analysis** — Where investors drop off (browse → match → connect → invest)
-- **Franchisor performance** — Which brands are converting leads vs sitting idle
-- **Referral Rock metrics** — Referral program performance
+Cowork is ideal for tasks that involve:
+- Logging into a dashboard and exporting data
+- Taking screenshots of charts and sharing them
+- Monitoring metrics and alerting when they change
+- Combining data from multiple web tools
 
-### Weekly Matching Report
+### Weekly Report Example
 \`\`\`
 "Every Monday at 8am:
-1. Open the Franzy analytics dashboard
-2. Filter to last 7 days
-3. Screenshot the matching funnel chart
-4. Export investor-franchise match data as CSV
-5. Summarize: total matches, conversion rate, top 5 franchises
-6. Post summary + screenshot to #analytics in Slack"
+1. Open our analytics dashboard at analytics.example.com
+2. Set the date range to last 7 days
+3. Screenshot the conversion funnel chart
+4. Export the summary table as CSV
+5. Post the screenshot and key numbers to #metrics in Slack"
 \`\`\`
 
-### Investor Funnel Monitoring
+### Metric Monitoring
 \`\`\`
 "Every day at 9am:
-1. Check the investor signup funnel in our analytics
-2. If conversion from 'profile complete' to 'match viewed' drops below 40%, alert #product in Slack
-3. Include the current rate and last 7-day trend"
+1. Check our Stripe dashboard for MRR
+2. If MRR dropped more than 2% from yesterday, alert #revenue in Slack
+3. Include the current MRR, change amount, and top 3 churned accounts"
 \`\`\`
 
-### GrowthBook Experiment Results
+### Competitive Monitoring
+\`\`\`
+"Every Wednesday at 10am:
+1. Check competitor pricing pages (list URLs)
+2. Compare to our current pricing
+3. If any pricing changed, summarize the differences
+4. Post to #competitive-intel in Slack"
+\`\`\`
+
+### Multi-Source Reports
 \`\`\`
 "Every Friday at 4pm:
-1. Open GrowthBook dashboard
-2. Check all running experiments
-3. For any experiment with >95% significance, summarize the winner
-4. Post results to #experiments in Slack"
+1. Pull this week's signups from our admin dashboard
+2. Pull support ticket count from Zendesk
+3. Pull deployment count from GitHub
+4. Combine into a weekly summary with trends vs last week
+5. Post to #weekly-update in Slack"
 \`\`\`
 
-### Tips
-- Start with the weekly report — highest ROI
-- Use screenshots for visual dashboards that don't have CSV export
-- Set up alerts for metric drops, not just reports
-- Combine with MCP for richer data analysis`,
+### Best Practices
+1. **Start with one report** — pick the one that takes the most manual time
+2. **Use screenshots** for charts that can't be exported as data
+3. **Set up alerts** for threshold breaches, not just scheduled reports
+4. **Keep summaries concise** — bullet points beat paragraphs in Slack
+5. **Review and refine** — adjust thresholds and formats after the first week`,
     toolName: "Claude Cowork",
     category: "automation",
     difficulty: "beginner",
-    tags: ["analytics", "reporting", "cowork", "dashboards", "franzy"],
+    tags: ["analytics", "reporting", "cowork", "dashboards", "automation"],
     estimatedMinutes: 20,
     createdAt: "2025-02-22",
   },
   {
-    id: "franzy-fdd-analysis",
-    title: "FDD Document Analysis with Claude",
+    id: "document-analysis-extraction",
+    title: "Document Analysis & Data Extraction",
     summary:
-      "Use Claude to parse, summarize, and compare Franchise Disclosure Documents — extracting key financials, fees, and territory terms for investors.",
-    content: `## FDD Analysis with Claude
+      "Use Claude to parse long documents, extract structured data, compare multiple sources, and generate summaries — contracts, reports, specs, and more.",
+    content: `## Document Analysis & Data Extraction
 
-Franchise Disclosure Documents are 200+ page legal documents. Claude can extract the information investors actually need.
+Claude's 200K token context window makes it ideal for analyzing long documents. This lesson covers patterns for extraction, comparison, and summarization.
 
-### Key FDD Items to Extract
-- **Item 5** — Initial fees
-- **Item 6** — Other fees (royalties, marketing, technology)
-- **Item 7** — Estimated initial investment range
-- **Item 19** — Financial performance representations
-- **Item 12** — Territory rights and exclusivity
-
-### Structured Extraction
+### Structured Extraction with Tool Use
+Pull specific fields from unstructured documents:
 \`\`\`typescript
-const analyzeFDD = async (fddText: string) => {
-  const response = await claude.messages.create({
+const analyzeContract = async (contractText: string) => {
+  const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 4096,
     tools: [{
-      name: "extract_fdd",
-      description: "Extract key information from a Franchise Disclosure Document",
+      name: "extract_contract",
+      description: "Extract key terms from a contract",
       input_schema: {
         type: "object",
         properties: {
-          brandName: { type: "string" },
-          initialFee: { type: "string" },
-          totalInvestmentMin: { type: "number" },
-          totalInvestmentMax: { type: "number" },
-          royaltyRate: { type: "string" },
-          marketingFee: { type: "string" },
+          parties: { type: "array", items: { type: "string" } },
+          effectiveDate: { type: "string" },
           termLength: { type: "string" },
+          totalValue: { type: "number" },
           renewalTerms: { type: "string" },
-          territoryType: { enum: ["exclusive", "protected", "none"] },
-          averageRevenue: { type: "string" },
-          unitCount: { type: "number" },
-          keyRisks: { type: "array", items: { type: "string" } },
+          terminationClauses: { type: "array", items: { type: "string" } },
+          keyObligations: { type: "array", items: { type: "string" } },
+          risks: { type: "array", items: { type: "string" } },
           summary: { type: "string" }
         }
       }
     }],
-    tool_choice: { type: "tool", name: "extract_fdd" },
-    messages: [{ role: "user", content: \`Analyze this FDD:\\n\${fddText}\` }]
+    tool_choice: { type: "tool", name: "extract_contract" },
+    messages: [{ role: "user", content: \`Extract key terms:\\n\${contractText}\` }]
   });
   return response.content[0].input;
 };
 \`\`\`
 
-### Franchise Comparison
+### Document Comparison
+Compare two or more documents side by side:
 \`\`\`
-"Compare these two franchise FDDs:
-- Investment range
-- Ongoing fees (royalty + marketing)
-- Territory protection
-- Average unit revenue
-- Growth trajectory (unit count over 3 years)
-Present as a side-by-side table."
+"Compare these two vendor proposals:
+- Pricing structure and total cost
+- Delivery timeline
+- Support and SLA terms
+- Key differences in scope
+Present as a markdown table with a recommendation."
 \`\`\`
 
-### Investor-Friendly Summaries
-Turn 200-page FDDs into 1-page summaries:
-1. **The Basics** — What is this franchise, what does it cost
-2. **The Money** — What do operators typically earn
-3. **The Commitment** — Term length, territory, restrictions
-4. **The Risks** — Key things to watch out for
+### Summarization Patterns
+For different audiences, different summaries:
+\`\`\`
+"Summarize this 50-page technical spec for three audiences:
 
-### Feeding into Fit Score
-FDD analysis can enhance the Franzy Fit Score:
-- Compare investor's budget to Item 7 investment range
-- Match investor's desired involvement to operating requirements
-- Flag territory conflicts with investor's preferred location`,
+1. **Executive summary** (3 sentences): Business impact, timeline, cost
+2. **Technical summary** (1 page): Architecture, key decisions, risks
+3. **Team checklist**: Action items by role (frontend, backend, QA)"
+\`\`\`
+
+### Batch Processing
+Process multiple documents with consistent extraction:
+\`\`\`typescript
+const results = await Promise.all(
+  documents.map(doc =>
+    client.messages.create({
+      model: "claude-haiku-4-5-20251001", // Fast + cheap for extraction
+      tools: [extractionTool],
+      tool_choice: { type: "tool", name: "extract_data" },
+      messages: [{ role: "user", content: doc.text }]
+    })
+  )
+);
+\`\`\`
+
+### Best Practices
+1. **Use tool use for extraction** — guarantees structured output
+2. **Use Haiku for high-volume tasks** — 10x cheaper, still accurate for extraction
+3. **Chunk very long documents** — split into logical sections if over 100K tokens
+4. **Validate extracted data** — spot-check a sample before trusting bulk results
+5. **Include the source** — ask Claude to cite page numbers or section headings`,
     toolName: "Claude API",
     category: "automation",
     difficulty: "advanced",
-    tags: ["fdd", "documents", "analysis", "franchise", "franzy"],
+    tags: ["documents", "extraction", "analysis", "contracts", "summarization"],
     estimatedMinutes: 30,
     createdAt: "2025-02-25",
   },
 
-  // ─── Franzy: Sales & Advisors ───
   {
-    id: "franzy-advisor-matching",
-    title: "AI-Assisted Franchise Matching for Advisors",
+    id: "ai-assisted-sales-prep",
+    title: "AI-Assisted Sales & Meeting Prep",
     summary:
-      "How Franzy advisors can use Claude to research brands, prep for client calls, and generate better Fit Score explanations during the matching process.",
-    content: `## AI-Assisted Matching for Franzy Advisors
+      "Use Claude to research prospects, prep for client calls, structure meeting notes, and draft follow-ups — practical prompts for any sales workflow.",
+    content: `## AI-Assisted Sales & Meeting Prep
 
-As a Franzy Advisor, you guide buyers through a 90-400+ day journey from discovery to ownership. Claude can help at every stage.
+Claude can handle the prep work that eats into selling time — research, talking points, objection handling, and follow-up drafts.
 
 ### Pre-Call Research
-Before a client meeting, ask Claude to prep:
+Before any client meeting, load context and ask Claude to prep:
 \`\`\`
-"I have a call with a prospect who has $200K liquid,
-wants a semi-absentee QSR franchise in the Southeast.
-They're a former restaurant manager.
+"I have a call with [Company] in 30 minutes. Here's what I know:
+- They're a Series B SaaS company, 200 employees
+- Current pain: manual onboarding taking 2 weeks per customer
+- Budget: $50-100K annually
+- Decision maker: VP of Customer Success
 
-Based on our brand portfolio, give me:
-1. Top 5 brand recommendations with reasoning
-2. Key talking points for each
-3. Potential objections they might raise
-4. Territory availability questions to ask"
-\`\`\`
-
-### Explaining Fit Scores
-Turn the numeric Fit Score into a conversation:
-\`\`\`
-"This investor scored 87 for Marco's Pizza and 62 for Jersey Mike's.
-Explain why in plain language, covering:
-- Financial fit (Item 7 investment range vs their capital)
-- Lifestyle fit (semi-absentee vs owner-operator)
-- Market fit (territory saturation in their area)
-- Experience fit (their background vs brand requirements)"
+Give me:
+1. Three questions to uncover their real priorities
+2. How our product solves their onboarding bottleneck
+3. Likely objections and how to address each
+4. A proposed next step if the call goes well"
 \`\`\`
 
-### Track 1 vs Track 2 Routing
-Help classify prospects into the right sales track:
-- **Track 1**: Clear goals, qualified capital, ready to move → fast-track to matching
-- **Track 2**: Needs education, exploring, not sure about franchising → nurture sequence
-
-### Post-Call Notes
-After a client call, dictate notes and let Claude structure them:
+### Structuring Call Notes
+After a meeting, dump your raw notes and let Claude organize:
 \`\`\`
-"Structure these call notes for HubSpot:
-- Client sentiment and readiness level
-- Brands discussed and reactions
-- Next steps and follow-up timeline
-- Any red flags or concerns"
+"Structure these call notes for our CRM:
+- Client sentiment and buying stage
+- Pain points discussed (ranked by urgency)
+- Solutions presented and reactions
+- Competitors mentioned
+- Next steps and timeline
+- Red flags or blockers
+
+Raw notes: [paste your rough notes]"
 \`\`\`
 
-### Key Phrases to Know
-- "Maybe until it's a no" — support the exploration, don't pressure
-- "The only dog in the fight we have is you" — no brand-specific incentives
-- "Frick and fracking" — relationship management with FranDev teams`,
+### Drafting Follow-Ups
+\`\`\`
+"Draft a follow-up email based on these call notes:
+[paste structured notes]
+
+Keep it under 150 words. Reference the specific pain points
+they mentioned. Include a clear next step with a specific date."
+\`\`\`
+
+### Objection Handling Prep
+\`\`\`
+"I'm presenting our enterprise plan ($80K/year) to a prospect
+who currently uses [Competitor] at $30K/year.
+
+Give me responses for these likely objections:
+1. 'Why should I pay 2.5x more?'
+2. 'We're locked into a contract until Q3'
+3. 'My team doesn't want to switch tools'
+4. 'Can you match their pricing?'"
+\`\`\`
+
+### Best Practices
+1. **Give Claude context** — the more you share, the better the prep
+2. **Be specific about format** — CRM fields, email length, number of points
+3. **Always review before sending** — Claude drafts, you finalize
+4. **Save your best prompts** — create templates for common meeting types
+5. **Use Projects** — keep client context persistent across conversations`,
     toolName: "Claude",
     category: "communication",
     difficulty: "beginner",
-    tags: ["advisors", "matching", "sales", "franzy"],
+    tags: ["sales", "meetings", "prep", "follow-ups", "crm"],
     estimatedMinutes: 20,
     createdAt: "2025-02-26",
   },
   {
-    id: "franzy-hubspot-pipeline",
-    title: "Claude + HubSpot: Managing the Franzy Pipeline",
+    id: "api-integration-workflows",
+    title: "Building API Integration Workflows",
     summary:
-      "Use Claude to analyze your HubSpot pipeline, draft follow-ups, rate calls, and automate the two-way sync between Franzy Core and HubSpot CRM.",
-    content: `## HubSpot Pipeline Management with Claude
+      "Connect Claude to your CRM, project management, and communication tools via APIs — pipeline analysis, automated follow-ups, and cross-tool workflows.",
+    content: `## Building API Integration Workflows
 
-Franzy Core has a two-way HubSpot sync. Claude can help you work smarter with your pipeline data.
+Claude's API can sit between your tools, analyzing data from one system and taking action in another. This lesson covers common integration patterns.
 
-### Pipeline Health Check
-\`\`\`
-"Analyze my HubSpot pipeline and flag:
-- Deals stale for 14+ days with no activity
-- Prospects who completed Assessment but haven't booked a meeting
-- Connection Wizard intros that haven't had follow-up
-- Any deals where the prospect's liquid capital doesn't match the brand's Item 7 range"
-\`\`\`
-
-### Automated Call Ratings
-After advisor calls (from Fireflies transcripts):
+### CRM Pipeline Analysis
+Use Claude to analyze exported CRM data:
 \`\`\`typescript
-const rateCall = async (transcript: string) => {
-  const response = await claude.messages.create({
+const analyzePipeline = async (deals: Deal[]) => {
+  const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 1024,
+    max_tokens: 2048,
     tools: [{
-      name: "rate_call",
-      description: "Rate a Franzy advisor call",
+      name: "pipeline_analysis",
+      description: "Analyze a sales pipeline for issues and opportunities",
       input_schema: {
         type: "object",
         properties: {
-          overallRating: { type: "number", minimum: 1, maximum: 10 },
-          prospectReadiness: { enum: ["not-ready", "exploring", "researching", "ready-to-invest"] },
-          brandsDiscussed: { type: "array", items: { type: "string" } },
-          nextSteps: { type: "array", items: { type: "string" } },
-          objections: { type: "array", items: { type: "string" } },
-          followUpDraft: { type: "string" }
+          staleDeals: { type: "array", items: {
+            type: "object",
+            properties: {
+              dealId: { type: "string" },
+              daysSinceActivity: { type: "number" },
+              suggestedAction: { type: "string" }
+            }
+          }},
+          atRiskDeals: { type: "array", items: { type: "string" } },
+          topPriorities: { type: "array", items: { type: "string" } },
+          weeklyForecast: { type: "number" }
         }
       }
     }],
-    tool_choice: { type: "tool", name: "rate_call" },
-    messages: [{ role: "user", content: \`Rate this advisor call:\\n\${transcript}\` }]
+    tool_choice: { type: "tool", name: "pipeline_analysis" },
+    messages: [{ role: "user", content: JSON.stringify(deals) }]
   });
   return response.content[0].input;
 };
 \`\`\`
 
-### Key Metrics to Track
-- **Leads** → **Qualified Leads** ($50K liquid, $150K+ net worth)
-- **Booked Meetings** → **Match Requested** → **Match Made**
-- **Confirmation Days** → **Deals Closed**
-- **CPL** and **Cost per Deal**
+### Meeting Transcript Analysis
+Process call recordings (from Fireflies, Gong, etc.):
+\`\`\`typescript
+const analyzeCall = async (transcript: string) => {
+  return client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1024,
+    tools: [{
+      name: "call_analysis",
+      input_schema: {
+        type: "object",
+        properties: {
+          sentiment: { type: "string", enum: ["positive", "neutral", "negative"] },
+          keyTopics: { type: "array", items: { type: "string" } },
+          actionItems: { type: "array", items: { type: "string" } },
+          objections: { type: "array", items: { type: "string" } },
+          nextSteps: { type: "string" },
+          followUpDraft: { type: "string" }
+        }
+      }
+    }],
+    tool_choice: { type: "tool", name: "call_analysis" },
+    messages: [{ role: "user", content: transcript }]
+  });
+};
+\`\`\`
 
-### Follow-Up Sequences
-Claude can draft stage-appropriate follow-ups:
-1. **Post-Assessment** → "Here are your top matches and why"
-2. **Post-Brand Call** → "Summary of what you learned + next steps"
-3. **Pre-Confirmation Day** → "What to expect and questions to prepare"
-4. **Post-Close** → Transition to FranzyOS onboarding`,
+### Cross-Tool Workflow Example
+\`\`\`
+Incoming email (Gmail/Outlook)
+    ↓ Claude classifies intent + urgency
+    ↓
+CRM update (HubSpot/Salesforce)
+    ↓ Claude drafts response
+    ↓
+Task created (Linear/Jira)
+    ↓ Claude summarizes for Slack
+    ↓
+Slack notification (#sales-alerts)
+\`\`\`
+
+### Integration Tips
+1. **Start with read-only** — analyze data before automating writes
+2. **Use webhooks** to trigger Claude workflows in real time
+3. **Always include human review** for customer-facing actions
+4. **Log everything** — track what Claude analyzed and recommended
+5. **Use Haiku for classification** — fast and cheap for routing decisions`,
     toolName: "Claude API",
     category: "workflow",
     difficulty: "intermediate",
-    tags: ["hubspot", "pipeline", "crm", "sales", "franzy"],
+    tags: ["api", "integration", "crm", "workflow", "automation"],
     estimatedMinutes: 25,
     createdAt: "2025-02-26",
   },
   {
-    id: "franzy-brief-content",
-    title: "Generating Content for The Franzy Brief",
+    id: "content-creation-workflows",
+    title: "Content Creation Workflows with Claude",
     summary:
-      "Use Claude to research franchise industry news, draft newsletter sections, and maintain the 70% open rate on Franzy's daily newsletter.",
-    content: `## Content Generation for The Franzy Brief
+      "Use Claude to research, draft, and refine content — newsletters, blog posts, social media, and marketing copy with consistent voice and quality.",
+    content: `## Content Creation Workflows
 
-The Franzy Brief is Franzy's daily newsletter with a 70% open rate. Claude can help research, draft, and maintain quality.
+Claude excels at content creation when you give it structure, voice guidelines, and a clear workflow. This lesson covers repeatable patterns for any content team.
 
-### Newsletter Structure
-Each edition of The Franzy Brief includes:
-1. **Big Moves** — Major franchise industry news
-2. **Numbers That Matter** — Key stats and data points
-3. **Use This Today** — Actionable tip for franchise investors/operators
-4. **Random Franchise Fact** — Fun/surprising franchise trivia
-
-### Daily Research Workflow
+### Newsletter Workflow
 \`\`\`
-"Search for today's franchise industry news from:
-- Franchise Times
-- QSR Magazine
-- Restaurant Dive
-- IFA announcements
-- Franchising.com
+"Draft this week's newsletter:
 
-Summarize the top 3 stories in 2-3 sentences each.
-Flag any stories relevant to Franzy's brand partners."
+Topic: [paste topic or news summary]
+Voice: Conversational, knowledgeable, slightly irreverent
+Structure:
+1. Hook (1 sentence that makes people keep reading)
+2. Main story (100 words max)
+3. Key stat or data point
+4. Actionable takeaway (what the reader should do)
+
+Keep total length under 300 words."
 \`\`\`
 
-### Draft Generation
+### Blog Post Generation
 \`\`\`
-"Draft today's Franzy Brief:
+"Write a blog post outline for: '[Topic]'
 
-Big Move: [paste news summary]
-Write in Brett's voice — conversational, knowledgeable, slightly irreverent.
-Keep it under 100 words per section.
-Include one data point or stat in 'Numbers That Matter.'
-Make 'Use This Today' actionable for someone considering franchise ownership."
+Target audience: [describe reader]
+Goal: [inform / persuade / educate]
+SEO keywords: [list 3-5]
+Tone: [professional / casual / technical]
+
+Include:
+- H2 headings with brief descriptions
+- Key points under each section
+- A compelling intro hook
+- A clear CTA at the end"
 \`\`\`
 
-### SEO & Blog Content
-For franzy.com content marketing:
-- Franchise comparison articles ("Marco's Pizza vs Jersey Mike's: Which Is Right for You?")
-- Investment guides by category ("Best Home Service Franchises Under $100K")
-- Territory analysis content
-- FDD explainers for first-time buyers
+### Maintaining Voice Consistency
+Create a voice guide and include it as context:
+\`\`\`
+"Use this voice guide for all drafts:
+- First person plural ('we')
+- Short sentences. Punchy paragraphs.
+- No jargon — explain technical concepts simply
+- Use concrete examples over abstract claims
+- Humor is OK but never at the reader's expense
+- Always end with a clear action step"
+\`\`\`
 
-### Brand Spotlight Content
-For franchisor partners, generate:
-- Brand comparison pages
-- Investment breakdown articles
-- Success story templates
-- Territory availability updates`,
+### Content Repurposing
+Turn one piece of content into many:
+\`\`\`
+"Here's a 2,000-word blog post. Create:
+1. A LinkedIn post (150 words, professional tone)
+2. Three tweets (each highlighting a different insight)
+3. An email subject line + preview text
+4. A 30-second script for a short-form video"
+\`\`\`
+
+### Editing & Refinement
+\`\`\`
+"Review this draft for:
+- Clarity: Is any sentence confusing?
+- Conciseness: What can be cut without losing meaning?
+- Flow: Do paragraphs connect logically?
+- CTA: Is the call-to-action clear and compelling?
+
+Mark changes with [ORIGINAL] → [SUGGESTED] format."
+\`\`\`
+
+### Best Practices
+1. **Always provide voice/tone guidelines** — Claude adapts fast
+2. **Use Projects** to keep your brand voice guide persistent
+3. **Draft → Review → Refine** — never publish first drafts
+4. **Batch similar content** — write 5 social posts at once, not one at a time
+5. **Include examples of content you love** — show don't tell`,
     toolName: "Claude",
     category: "communication",
     difficulty: "beginner",
-    tags: ["newsletter", "content", "marketing", "franzy-brief", "franzy"],
+    tags: ["content", "writing", "newsletters", "marketing", "copywriting"],
     estimatedMinutes: 15,
     createdAt: "2025-02-26",
   },
   {
-    id: "franzy-os-data-ingestion",
-    title: "FranzyOS: Solving the Data Ingestion Challenge",
+    id: "browser-automation-scraping",
+    title: "Browser Automation & Data Ingestion with Claude",
     summary:
-      "How to use Claude and browser automation to ingest data from POS systems (Toast, Qu), payroll, and scheduling tools that don't have APIs.",
-    content: `## FranzyOS Data Ingestion
+      "Use Claude with browser automation tools to extract data from web dashboards, normalize messy data across sources, and build reliable ingestion pipelines.",
+    content: `## Browser Automation & Data Ingestion
 
-The biggest technical challenge in FranzyOS: many franchise systems don't have APIs. Here's how Claude + automation can help.
+Many business tools don't have APIs. Claude + browser automation can extract, normalize, and pipeline that data anyway.
 
-### The Problem
-Multi-unit operators (20-70 units) have data across:
-- **POS**: Toast, Qu, Brink/PAR (sales, tickets, menu mix)
-- **Labor**: HotSchedules, WiseTail (scheduling, training)
-- **Accounting**: Restaurant 365, Crunchtime (P&L, food cost)
-- **Reviews**: Google, Yelp (customer feedback)
+### The Pattern
+\`\`\`
+Web Dashboard (no API)
+    ↓ Browser automation (Playwright / Puppeteer)
+Extract raw data
+    ↓ Claude normalizes & structures
+Clean, consistent data
+    ↓ Store in your database
+Ready for analysis
+\`\`\`
 
-Most of these systems have limited or no APIs.
-
-### Browser Automation Approach
-Using Stagehand.dev + Browserbase.com:
+### Browser Automation with Playwright
 \`\`\`typescript
-// Example: Extract daily sales from Toast dashboard
-const session = await browserbase.createSession();
-const page = await session.newPage();
+import { chromium } from "playwright";
 
-// Navigate and authenticate
-await page.goto("https://pos.toasttab.com");
-await page.fill("#email", credentials.email);
-await page.fill("#password", credentials.password);
+const extractDashboardData = async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
 
-// Navigate to reports
-await page.click('[data-testid="reports-nav"]');
-await page.click('[data-testid="daily-sales"]');
+  // Navigate and authenticate
+  await page.goto("https://dashboard.example.com");
+  await page.fill("#email", process.env.DASHBOARD_EMAIL!);
+  await page.fill("#password", process.env.DASHBOARD_PASSWORD!);
+  await page.click('button[type="submit"]');
 
-// Extract data
-const salesData = await page.evaluate(() => {
-  // Parse the dashboard DOM for sales figures
-  return extractSalesTable();
-});
+  // Navigate to reports
+  await page.click('[data-nav="reports"]');
+  await page.waitForSelector(".report-table");
 
-// Store in ClickHouse for analytics
-await clickhouse.insert("daily_sales", salesData);
+  // Extract data from the table
+  const data = await page.evaluate(() => {
+    const rows = document.querySelectorAll(".report-table tr");
+    return Array.from(rows).map(row => {
+      const cells = row.querySelectorAll("td");
+      return Array.from(cells).map(c => c.textContent?.trim());
+    });
+  });
+
+  await browser.close();
+  return data;
+};
 \`\`\`
 
 ### Claude for Data Normalization
-Different POS systems report data differently. Claude normalizes:
-\`\`\`
-"Normalize these Toast and Qu POS reports into a standard schema:
-- location_id, date, gross_sales, net_sales, ticket_count,
-  avg_ticket, labor_cost, food_cost, comps, voids
-Handle the different field names and formats between systems."
+Different sources format data differently. Claude standardizes:
+\`\`\`typescript
+const normalizeData = async (rawData: string[][], source: string) => {
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 4096,
+    tools: [{
+      name: "normalize",
+      description: "Normalize raw dashboard data into standard schema",
+      input_schema: {
+        type: "object",
+        properties: {
+          records: { type: "array", items: {
+            type: "object",
+            properties: {
+              date: { type: "string", description: "ISO 8601 date" },
+              metric: { type: "string" },
+              value: { type: "number" },
+              unit: { type: "string" },
+              source: { type: "string" }
+            }
+          }}
+        }
+      }
+    }],
+    tool_choice: { type: "tool", name: "normalize" },
+    messages: [{
+      role: "user",
+      content: \`Normalize this data from \${source}:\\n\${JSON.stringify(rawData)}\`
+    }]
+  });
+  return response.content[0].input.records;
+};
 \`\`\`
 
-### Credential Provisioning
-The biggest bottleneck. For each pilot partner:
-1. Request system credentials (POS, labor, accounting)
-2. Verify access levels (read-only minimum)
-3. Navigate corporate franchisor concerns (e.g., Jersey Mike's legal)
-4. Set up automated extraction schedules
+### Handling Common Challenges
+| Challenge | Solution |
+|-----------|----------|
+| Login requires 2FA | Use session cookies or API tokens when possible |
+| Dashboard loads data async | \`waitForSelector\` or \`waitForResponse\` |
+| Data in charts not tables | Screenshot + Claude vision, or intercept API calls |
+| Rate limiting | Add delays between requests, run during off-hours |
+| Schema changes | Claude adapts — re-run normalization on failures |
 
-### Current Pilot Systems
-| Partner | POS | Other Systems |
-|---------|-----|---------------|
-| MPZ Hot (62 units) | Toast | WiseTail |
-| Walcorp (22 units) | Qu | Crunchtime, R365, Vantage Point |
-| KM Dev (8 units) | Mixed | — |
-| Onyx Brands | Toast, Brink/PAR | Operandio, HotSchedules |
-| PBHG (300+ units) | Multiple | Multiple |`,
+### Best Practices
+1. **Always use read-only credentials** — never automate write actions
+2. **Run on a schedule** — cron jobs or scheduled cloud functions
+3. **Log raw data before normalizing** — you can always re-process
+4. **Monitor for failures** — dashboards change without warning
+5. **Use Haiku for normalization** — fast, cheap, handles repetitive extraction well`,
     toolName: "Claude Code",
     category: "coding",
     difficulty: "advanced",
-    tags: ["franzyos", "data-ingestion", "pos", "toast", "browser-automation", "franzy"],
+    tags: ["browser-automation", "data-ingestion", "scraping", "playwright", "normalization"],
     estimatedMinutes: 40,
     createdAt: "2025-02-26",
   },
   {
-    id: "franzy-os-copilot",
-    title: "Building the FranzyOS AI Copilot",
+    id: "building-ai-copilot",
+    title: "Building an AI Copilot for Your Product",
     summary:
-      "Architecture and implementation of FranzyOS's natural language copilot — evidence-first answers, role-based insights, and proactive recommendations for franchise operators.",
-    content: `## FranzyOS AI Copilot Architecture
+      "Architecture and implementation patterns for adding a natural language AI copilot to your product — tool use, role-based access, evidence-backed answers, and proactive insights.",
+    content: `## Building an AI Copilot for Your Product
 
-FranzyOS's core feature: operators ask questions in natural language, get answers backed by their actual data.
+An AI copilot lets users ask questions in natural language and get answers backed by their actual data. This lesson covers the architecture and patterns.
 
 ### Design Principles
-1. **Evidence-first** — Every claim tied to a data source. Operators trust data they can verify.
-2. **Role-based** — Owners see portfolio-level insights. Area managers see location comparisons. Store leaders see daily priorities.
-3. **Proactive** — Surface top 3 priorities daily, don't wait for questions.
-4. **Actionable** — Don't just report problems, suggest specific actions.
+1. **Evidence-first** — Every claim tied to a data source users can verify
+2. **Role-based** — Different users see different scopes of data
+3. **Proactive** — Surface insights without waiting for questions
+4. **Actionable** — Suggest specific next steps, not just observations
 
 ### Architecture
 \`\`\`
-Operator Question (natural language)
+User Question (natural language)
     ↓
 Claude API (with tools)
-    ├─ ClickHouse queries (analytics, benchmarking)
-    ├─ PostgreSQL queries (location data, org structure)
-    └─ S3 documents (FDDs, training materials)
+    ├─ Database queries (your application data)
+    ├─ Analytics engine (metrics, trends)
+    └─ Document store (policies, docs)
     ↓
 Evidence-backed response with citations
 \`\`\`
 
-### Example Interactions
-\`\`\`
-Operator: "Why did our Charlotte Marco's location underperform last week?"
-
-AI Copilot: "Charlotte Marco's (Unit #247) had $18,200 in net sales
-last week, 22% below its 8-week average of $23,400.
-
-Key factors:
-1. Labor cost was 38% of sales (vs target of 30%) — overtime hours
-   were 2.3x the location average [Source: Toast labor report]
-2. Ticket count dropped 15% vs prior week, likely weather-related
-   (Charlotte had 3 rain days) [Source: Toast daily sales]
-3. Comp/void rate was 4.2% (vs 1.8% average) — investigate
-   [Source: Toast comp report]
-
-Recommended actions:
-- Review overtime scheduling with store manager
-- Audit comp/void reasons for the week
-- Compare with other Charlotte-area locations"
-\`\`\`
-
-### Role-Based Dashboards
+### Implementation Pattern
 \`\`\`typescript
-// Different tools/prompts per role
+const copilot = async (userQuestion: string, userRole: string) => {
+  const config = roleConfigs[userRole];
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 2048,
+    system: config.systemPrompt,
+    tools: config.tools, // Role-specific data access
+    messages: [{ role: "user", content: userQuestion }]
+  });
+
+  // Handle tool use loop — Claude may call multiple tools
+  let result = response;
+  while (result.stop_reason === "tool_use") {
+    const toolCalls = result.content.filter(c => c.type === "tool_use");
+    const toolResults = await Promise.all(
+      toolCalls.map(tc => executeToolCall(tc))
+    );
+    result = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2048,
+      system: config.systemPrompt,
+      tools: config.tools,
+      messages: [
+        { role: "user", content: userQuestion },
+        { role: "assistant", content: result.content },
+        { role: "user", content: toolResults }
+      ]
+    });
+  }
+  return result.content[0].text;
+};
+\`\`\`
+
+### Role-Based Configuration
+\`\`\`typescript
 const roleConfigs = {
-  owner: {
-    system: "You are a franchise profitability advisor for a multi-unit operator...",
-    tools: [portfolioOverview, locationBenchmark, profitabilityTrend],
-    dailyPrompt: "Top 3 priorities across all locations this week"
+  admin: {
+    systemPrompt: "You are a data analyst for the entire organization...",
+    tools: [queryAllMetrics, userAnalytics, revenueData],
   },
-  areaManager: {
-    system: "You advise an area manager overseeing 8-15 franchise locations...",
-    tools: [locationComparison, laborAnalysis, salesTrend],
-    dailyPrompt: "Which locations need attention today and why"
+  manager: {
+    systemPrompt: "You advise a team manager on their team's performance...",
+    tools: [teamMetrics, projectStatus, memberActivity],
   },
-  storeLeader: {
-    system: "You help a franchise store leader optimize daily operations...",
-    tools: [dailySales, laborSchedule, customerFeedback],
-    dailyPrompt: "Today's focus areas based on yesterday's performance"
+  member: {
+    systemPrompt: "You help an individual contributor with their work...",
+    tools: [myTasks, myMetrics, teamContext],
   }
 };
 \`\`\`
 
-### Coaching Cards
-Turn insights into action:
-1. Identify the issue (data-backed)
-2. Explain the impact ($$)
-3. Suggest specific corrective action
-4. Assign to the right role
-5. Track completion`,
+### Proactive Insights
+Don't wait for questions — run daily analysis:
+\`\`\`typescript
+const dailyInsights = async (userId: string) => {
+  const recentData = await fetchRecentMetrics(userId);
+  return client.messages.create({
+    model: "claude-haiku-4-5-20251001", // Fast for daily batch
+    max_tokens: 512,
+    system: "Generate the top 3 priorities based on this data. Be specific and actionable.",
+    messages: [{ role: "user", content: JSON.stringify(recentData) }]
+  });
+};
+\`\`\`
+
+### Best Practices
+1. **Always cite sources** — include where data came from
+2. **Limit tool access by role** — don't expose data users shouldn't see
+3. **Use streaming** for responsive UX — answers appear incrementally
+4. **Cache common queries** — same question from different users can share results
+5. **Log everything** — track questions, tool calls, and responses for improvement`,
     toolName: "Claude API",
     category: "coding",
     difficulty: "advanced",
-    tags: ["franzyos", "copilot", "ai", "operators", "franzy"],
+    tags: ["copilot", "ai-product", "architecture", "tool-use", "role-based"],
     estimatedMinutes: 45,
     createdAt: "2025-02-26",
   },
