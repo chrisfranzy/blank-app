@@ -237,7 +237,9 @@ export default function PdfToEpubPage() {
             <div>
               <p className="text-ink font-medium">Conversion complete</p>
               <p className="text-sm text-ink-muted mt-0.5">
-                {result.pageCount} page{result.pageCount === 1 ? "" : "s"} processed.
+                {result.pageCount} page{result.pageCount === 1 ? "" : "s"} read
+                {" → "}
+                {result.chapterCount} section{result.chapterCount === 1 ? "" : "s"}.
               </p>
               {result.empty && (
                 <p className="text-sm text-accent-sand mt-2 flex items-start gap-1.5">
